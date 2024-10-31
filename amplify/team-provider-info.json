@@ -1,0 +1,32 @@
+{
+  "main": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-chironoteext-main-6b5ba-authRole",
+      "UnauthRoleArn": "arn:aws:iam::026090532772:role/amplify-chironoteext-main-6b5ba-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::026090532772:role/amplify-chironoteext-main-6b5ba-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-chironoteext-main-6b5ba-deployment",
+      "UnauthRoleName": "amplify-chironoteext-main-6b5ba-unauthRole",
+      "StackName": "amplify-chironoteext-main-6b5ba",
+      "StackId": "arn:aws:cloudformation:us-east-2:026090532772:stack/amplify-chironoteext-main-6b5ba/3f52e4f0-9279-11ef-b3d5-0adb99c42045",
+      "AmplifyAppId": "dly5t1ss8401e"
+    },
+    "categories": {
+      "auth": {
+        "chironoteext": {
+          "allowUnauthenticatedIdentities": false,
+          "authRoleArn": "arn:aws:iam::026090532772:role/amplify-chironotev4-prod-4c026-authRole",
+          "authRoleName": "amplify-chironotev4-prod-4c026-authRole",
+          "identityPoolId": "us-east-2:4a06251b-be0d-4d90-90c2-c8b36eacc9e5",
+          "identityPoolName": "chironotev4167c865f_identitypool_167c865f__prod",
+          "nativeClientId": "6a81qnoqksnro56429d58dkh6t",
+          "unauthRoleArn": "arn:aws:iam::026090532772:role/amplify-chironotev4-prod-4c026-unauthRole",
+          "unauthRoleName": "amplify-chironotev4-prod-4c026-unauthRole",
+          "userPoolId": "us-east-2_aVd5jqVzd",
+          "userPoolName": "chironotev4167c865f_userpool_167c865f-prod",
+          "webClientId": "4t5g8kblvqr0iuvd030dko7qi"
+        }
+      }
+    }
+  }
+}

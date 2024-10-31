@@ -1,0 +1,101 @@
+{
+  "auth": {
+    "chironoteext": {
+      "customAuth": false,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "serviceType": "imported"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_auth_chironoteext_allowUnauthenticatedIdentities": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_authRoleArn": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_authRoleName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_identityPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_identityPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_nativeClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_unauthRoleArn": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_unauthRoleName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_userPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_userPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    },
+    "AMPLIFY_auth_chironoteext_webClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "chironoteext"
+        }
+      ]
+    }
+  }
+}
