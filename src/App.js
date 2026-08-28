@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Amplify } from 'aws-amplify';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import { Image, View, withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import config from './amplifyconfiguration.json';
@@ -32,6 +33,7 @@ export function VisitWorkspace({ signOut, user }) {
   const [liveNote, setLiveNote] = useState(null);
   const [copyState, setCopyState] = useState({ status: 'idle', target: null });
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [accountEmail, setAccountEmail] = useState(user.signInDetails?.loginId || user.attributes?.email || user.username);
   const copyTimerRef = useRef(null);
   const copyRequestRef = useRef(0);
   const accountRef = useRef(null);
@@ -60,6 +62,15 @@ export function VisitWorkspace({ signOut, user }) {
     copyRequestRef.current += 1;
   }, []);
   useEffect(() => {
+    let cancelled = false;
+    fetchUserAttributes()
+      .then(attributes => {
+        if (!cancelled && attributes.email) setAccountEmail(attributes.email);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user.userId, user.username]);
+  useEffect(() => {
     if (!showAccountMenu) return undefined;
     accountRef.current?.querySelector('.account-menu a, .account-menu button')?.focus();
     const close = event => {
@@ -82,6 +93,7 @@ export function VisitWorkspace({ signOut, user }) {
     setCopyState({ status: 'idle', target: null });
   };
   const openRecording = () => {
+    if (isBusy) return;
     resetCopy();
     recordingManager.clearError();
     setSelectedNote(null);
@@ -114,26 +126,22 @@ export function VisitWorkspace({ signOut, user }) {
   return (
     <div className="extension-shell">
       <header className="topbar">
-        <div className="topbar-brand">
-          <img src={textLogo} alt="ChiroNote" className="topbar-logo" />
-          <span className="topbar-context">Visit companion</span>
-        </div>
+        <button type="button" className={`icon-button topbar-nav ${showHistory ? 'active' : ''}`}
+          aria-label={!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}
+          aria-pressed={showHistory} disabled={isBusy}
+          onClick={() => { resetCopy(); setShowHistory(true); setShowAccountMenu(false); }}>
+          <Icon name={!showRecording && !showHistory && reviewNote ? 'back' : 'history'} size={19} />
+          <span>{!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}</span>
+        </button>
         <div className="topbar-actions">
           <span className={`connection-indicator ${notesHistory.connection.toLowerCase()}`}
             role="status" aria-live="polite" title={notesHistory.connection}>
             <span aria-hidden="true" />{notesHistory.connection}
           </span>
-          {canCopy && (
-            <button type="button" className="icon-button" aria-label="Copy entire note"
-              title="Copy entire note" onClick={() => copyText(reviewNote.note, 'all')}>
-              <Icon name={copyState.target === 'all' && copyState.status === 'copied' ? 'check' : 'copy'} size={19} />
-            </button>
-          )}
-          <button type="button" className={`icon-button ${showHistory ? 'active' : ''}`}
-            aria-label={showHistory ? 'Return to visit workspace' : 'Show recent notes'}
-            title="Recent notes" aria-pressed={showHistory} disabled={isBusy}
-            onClick={() => { resetCopy(); setShowHistory(value => !value); setShowAccountMenu(false); }}>
-            <Icon name="history" size={19} />
+          <button type="button" className="icon-button topbar-nav recording-nav"
+            aria-label="New Recording" disabled={isBusy} onClick={openRecording}>
+            <Icon name="mic" size={19} />
+            <span>New Recording</span>
           </button>
           <div className="account-menu-wrap" ref={accountRef}>
             <button type="button" className="icon-button" ref={accountButtonRef}
@@ -143,7 +151,7 @@ export function VisitWorkspace({ signOut, user }) {
             </button>
             {showAccountMenu && (
               <div className="account-menu" aria-label="Account options">
-                <div className="account-menu-label"><small>Signed in as</small><span>{user.username}</span></div>
+                <div className="account-menu-label"><small>Signed in as</small><span>{accountEmail}</span></div>
                 <a href="https://chironote.ai/app/account" target="_blank" rel="noopener noreferrer">Manage account on website</a>
                 <button type="button" disabled={isBusy} onClick={() => { if (!isBusy) signOut(); }}>
                   Sign out
@@ -163,7 +171,8 @@ export function VisitWorkspace({ signOut, user }) {
           <Recording {...recordingManager} onBack={() => setShowRecording(true)} />
         ) : (
           <NoteWorkspace note={reviewNote} copyState={copyState}
-            onCopySection={copyText} onNewRecording={openRecording} />
+            onCopySection={copyText} onCopyNote={() => copyText(reviewNote.note, 'all')}
+            canCopy={canCopy} onNewRecording={openRecording} />
         )}
       </main>
     </div>

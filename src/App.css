@@ -14,37 +14,15 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 12px 24px 16px;
+  padding: 4px 12px 24px;
   background: var(--surface-0);
   border-bottom: 1px solid var(--border);
 }
 
-.topbar-brand,
 .topbar-actions {
   display: flex;
   min-width: 0;
   align-items: center;
-}
-
-.topbar-brand {
-  gap: 10px;
-}
-
-.topbar-logo {
-  display: block;
-  width: 126px;
-  height: 31px;
-  object-fit: contain;
-  object-position: left center;
-}
-
-.topbar-context {
-  padding-left: 10px;
-  color: var(--ink-500);
-  border-left: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 650;
-  white-space: nowrap;
 }
 
 .topbar-actions {
@@ -114,6 +92,33 @@
 .icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.35;
+}
+
+.topbar-nav {
+  display: inline-flex;
+  width: auto;
+  gap: 6px;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.topbar-nav .ui-icon {
+  flex-shrink: 0;
+}
+
+.recording-nav {
+  color: var(--brand-800);
+  background: var(--brand-50);
+  border-color: var(--brand-100);
+}
+
+.recording-nav:hover:not(:disabled),
+.recording-nav:focus-visible:not(:disabled) {
+  color: var(--surface-0);
+  background: var(--brand-800);
+  border-color: var(--brand-800);
 }
 
 .account-menu-wrap {
@@ -369,6 +374,18 @@
   font-size: 12px;
 }
 
+.note-meta-details {
+  display: grid;
+  gap: 4px;
+}
+
+.secondary-button.note-copy-button {
+  width: auto;
+  padding: 0 10px;
+  color: var(--brand-800);
+  font-size: 12px;
+}
+
 .note-document {
   overflow-wrap: anywhere;
   min-height: 0;
@@ -490,10 +507,6 @@
   border-color: var(--brand-100);
 }
 
-.next-visit-button {
-  min-height: 48px;
-}
-
 .empty-workspace {
   align-items: center;
   justify-content: center;
@@ -570,24 +583,16 @@
   50% { opacity: 0.35; }
 }
 
-@media (max-width: 580px) {
-  .topbar-context {
-    display: none;
-  }
-
-  .topbar-logo {
-    width: 118px;
-  }
-}
-
 @media (max-width: 360px) {
   .topbar {
     padding-right: 6px;
     padding-left: 10px;
   }
 
-  .topbar-logo {
-    width: 104px;
+  .topbar-nav {
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 12px;
   }
 
   .history-panel {
@@ -628,6 +633,5 @@
 @media (max-width: 300px) {
   .topbar { flex-wrap: wrap; align-content: start; gap: 4px; padding: 8px 6px 24px; }
   .topbar-actions { flex-wrap: wrap; flex-shrink: 1; }
-  .topbar-brand { flex-basis: 100%; }
   .recording-actions { grid-template-columns: 1fr; }
 }

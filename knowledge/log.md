@@ -2,6 +2,9 @@
 
 ## 2026-08-28
 
+- **Side-panel touch-ups**: Removed duplicate authenticated branding, labeled Recent Notes / Back to Notes navigation, added New Recording in the toolbar, and moved whole-note Copy to Clipboard beside Generated Note while retaining busy-state guards and section copy.
+- **Account and recording controls**: The account menu now displays the authenticated Cognito email when available, and New Recording uses the dark product-green hover/focus state.
+- **Recording setup**: Note settings now start expanded so format options remain visible before the first recording action.
 - **Recording safety**: Updated recording and architecture concepts for isolated sessions, ordered/cancellable uploads, teardown without finalization, startup eligibility gating, and completed-only generation with separate errors.
 - **History and account safety**: Documented owner/timestamp reconciliation, realtime/query merging, real connection states, reconnect/retry behavior, account remounting, and clipboard feedback.
 - **Clinical parity**: Aligned the design concept with shared product greens, system-font adaptation, readable text, keyboard/dialog behavior, short-panel scrolling, and keep-open guidance.

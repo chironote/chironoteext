@@ -13,7 +13,7 @@ function noteTimestamp(timestamp) {
   });
 }
 
-function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
+function NoteWorkspace({ note, copyState, onCopySection, onCopyNote, canCopy, onNewRecording }) {
   const noteText = note?.note?.trim() || '';
   const sections = splitNoteIntoSections(noteText);
   const hasSections = sections.some(section => section.label);
@@ -34,12 +34,15 @@ function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
   return (
     <section className="note-workspace">
       <div className="note-meta">
-        <strong>
-          {copyState.status === 'copied' && copyState.target === 'all'
-            ? 'Entire note copied'
-            : 'Generated note'}
-        </strong>
-        <time>{noteTimestamp(note.timestamp)}</time>
+        <div className="note-meta-details">
+          <strong>Generated Note</strong>
+          <time>{noteTimestamp(note.timestamp)}</time>
+        </div>
+        <button type="button" className="secondary-button note-copy-button"
+          aria-label="Copy to Clipboard" disabled={!canCopy} onClick={onCopyNote}>
+          <Icon name={copyState.target === 'all' && copyState.status === 'copied' ? 'check' : 'copy'} size={17} />
+          Copy to Clipboard
+        </button>
       </div>
 
       <p className={`copy-feedback ${copyState.status}`} role="status" aria-live="polite">
@@ -78,11 +81,8 @@ function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
         Review clinical accuracy before copying into the EHR.{' '}
         {hasSections
           ? 'Click a green section heading to copy that section.'
-          : 'Use the copy icon above to copy the complete note.'}
+          : 'Use Copy to Clipboard above to copy the complete note.'}
       </p>
-      <button type="button" className="secondary-button next-visit-button" onClick={onNewRecording}>
-        <Icon name="mic" size={17} /> Start next visit
-      </button>
     </section>
   );
 }

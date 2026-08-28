@@ -111,7 +111,7 @@ function Recording({
             <span>{isStarting ? 'Checking your account and microphone' : 'Uses your default microphone'}</span>
           </button>
 
-          <details className="recording-preferences">
+          <details className="recording-preferences" open>
             <summary>
               <span>
                 {noteSettings.examLayout || noteSettings.PILayout
