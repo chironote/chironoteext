@@ -42,6 +42,11 @@ function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
         <time>{noteTimestamp(note.timestamp)}</time>
       </div>
 
+      <p className={`copy-feedback ${copyState.status}`} role="status" aria-live="polite">
+        {copyState.target === 'all' && copyState.status === 'copied' ? 'Entire note copied' :
+          copyState.target === 'all' && copyState.status === 'error' ? 'Copy failed. Select the note text and copy manually.' : ''}
+      </p>
+
       <article className="note-document" aria-label="Generated clinical note">
         {hasSections ? sections.map((section, index) => (
           <section className="note-section" key={`${section.label || 'introduction'}-${index}`}>
@@ -70,6 +75,7 @@ function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
       </article>
 
       <p className="review-reminder">
+        Review clinical accuracy before copying into the EHR.{' '}
         {hasSections
           ? 'Click a green section heading to copy that section.'
           : 'Use the copy icon above to copy the complete note.'}

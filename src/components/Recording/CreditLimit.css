@@ -1,7 +1,7 @@
 .credit-card {
   display: flex;
   min-height: 0;
-  flex: 1;
+  flex: 1 0 auto;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -34,7 +34,7 @@
   max-width: 270px;
   margin: 0 0 20px;
   color: var(--ink-650);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.55;
 }
 

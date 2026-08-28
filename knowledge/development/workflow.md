@@ -1,28 +1,29 @@
 ---
 type: development-workflow
 title: "Extension Development Workflow"
-description: "Build commands, unpacked Chrome installation, validation, coding conventions, and change-scope rules."
+description: "Reproducible builds, tests, packaging, local Chrome installation, and maintenance boundaries."
 resource: "../../package.json"
 tags: [development, build, testing, chrome, workflow]
 ---
 
 # Extension Development Workflow
 
-Use npm with the checked-in lockfile. `npm install` restores dependencies, `npm test` runs the non-watch CRA test command, and `npm run build` produces the unpacked extension in `build/`. The build disables inline runtime code and source maps so the output is compatible with Manifest V3 extension-page security requirements.
+Use npm with the checked-in lockfile. `npm ci` restores dependencies, `npm test` runs CRA/Jest without watch mode, and `npm run build` builds and verifies the production MV3 package. The build wrapper explicitly disables inline runtime scripts and source maps, independent of ignored local environment files.
 
-Load `build/` from `chrome://extensions` with Developer mode enabled. After rebuilding, reload the extension card. Clicking the pinned toolbar icon must toggle the global ChiroNote side panel in the current Chrome window. Confirm that it remains visible and mounted while interacting with an EHR tab.
+Ignored frontend Amplify configuration must already be supplied by the owner. Agents must not run Amplify commands. The package verifier checks configuration-derived host permissions, package/manifest version parity, side-panel scope, local script references, and excluded source maps. Backend public client configuration is necessarily bundled; private AWS credentials are not build inputs.
 
-Use JavaScript and JSX with two-space indentation, single quotes, semicolons, and focused feature folders. Keep Chrome permissions minimal. Do not introduce remote JavaScript, analytics, broad EHR page permissions, patient-data persistence, or PHI-bearing logs.
+`npm run package:release` verifies the current build, writes a candidate ZIP with root-level manifest, reopens it to check its version, and writes a SHA256 file under ignored `release-artifacts/`. It does not publish. Run the build first after every source change.
 
-Changes to recording behavior require tests or manual validation of microphone permission, start, pause, resume, stop, discard, chunk upload, transcript waiting, streamed generation, and cleanup. UI changes require visual inspection at typical side-panel widths and at the 320-pixel minimum width.
+The owner loads `build/` from chrome://extensions, pins the icon, and opens the global side panel. Reload the extension card after rebuilding. Test beside a dummy EHR with synthetic content. Toolbar/tab persistence, real permissions, microphone/audio completeness, authenticated backend integration, and cross-client history require actual Chrome testing; Jest and static previews do not replace that gate.
 
-Update relevant OKS concepts and the knowledge log whenever architecture, behavior, visual rules, infrastructure ownership, or workflow changes.
+For visual-only evidence, set `CHIRONOTE_VISUAL_FIXTURES=1` when running tests. App tests export synthetic markup from real components to ignored `release-artifacts/visual/`. Serve that folder on localhost for responsive screenshots. Those fixtures contain no live authentication or recording and must not ship inside the extension ZIP.
+
+Use JavaScript/JSX, two spaces, single quotes, and semicolons. Preserve narrow scope, minimal permissions, sanitized diagnostics, and no clinical-content persistence. Update affected concepts and the knowledge log with implementation changes. Validate with the repository's Healtech OKS validator.
 
 ## Provenance
 
 - `package.json`
-- `.env`
-- `public/manifest.json`
-- `public/background.js`
-- `README.md`
+- `scripts/build.js`, `scripts/verify-package.js`, `scripts/package-release.ps1`
+- `src/App.test.jsx`
 - `AGENTS.md`
+- `release/reviewer-instructions.md`

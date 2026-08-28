@@ -1,133 +1,132 @@
-import { useCallback, useEffect, useState } from 'react';
-import { CONNECTION_STATE_CHANGE } from 'aws-amplify/api';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { CONNECTION_STATE_CHANGE, ConnectionState } from 'aws-amplify/api';
 import { Hub } from 'aws-amplify/utils';
 import * as queries from '../graphql/queries';
 import * as subscriptions from '../graphql/subscriptions';
 import { getAmplifyClient } from '../services/amplifyClient';
 import { groupItemsByWeek } from '../utils/historyGrouping';
+import { mergeNotes } from '../utils/mergeNotes';
 
-function useNotesHistory(username, setIsConnecting) {
+function useNotesHistory(username) {
   const [notes, setNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [connection, setConnection] = useState(navigator.onLine ? 'Connecting' : 'Offline');
   const [newItems, setNewItems] = useState(new Set());
   const [collapsedWeeks, setCollapsedWeeks] = useState(new Set());
-
-  const upsertNote = useCallback((note, highlight = true) => {
-    if (!note?.note?.trim()) return;
-
-    setNotes(current => [
-      note,
-      ...current.filter(item => item.timestamp !== note.timestamp)
-    ].slice(0, 100));
-
-    if (highlight) {
-      setNewItems(current => new Set([...current, note.timestamp]));
-    }
-  }, []);
+  const [revision, setRevision] = useState(0);
+  const ownerRef = useRef(null);
+  const initializedRef = useRef(false);
+  const refresh = useCallback(() => setRevision(value => value + 1), []);
 
   useEffect(() => {
     let active = true;
-
+    let request = 0;
+    let retryTimer;
+    let connectionState;
+    let eventsDuringQuery = [];
+    if (ownerRef.current !== username) {
+      ownerRef.current = username;
+      initializedRef.current = false;
+      setNotes([]);
+      setNewItems(new Set());
+      setCollapsedWeeks(new Set());
+    }
+    setConnection(navigator.onLine ? 'Connecting' : 'Offline');
     const fetchNotes = async () => {
+      const requestId = ++request;
+      eventsDuringQuery = [];
       setIsLoading(true);
       setError('');
-
       try {
         const response = await getAmplifyClient().graphql({
           query: queries.listNotes,
-          variables: {
-            owner: username,
-            sortDirection: 'DESC',
-            limit: 100
-          }
+          variables: { owner: username, sortDirection: 'DESC', limit: 100 }
         });
-
-        if (!active) return;
-        const fetchedNotes = response.data.listNotes.items
-          .filter(item => item.note?.trim())
-          .slice(0, 100);
-
-        setNotes(fetchedNotes);
-        const groups = groupItemsByWeek(fetchedNotes);
-        setCollapsedWeeks(new Set(groups.slice(1).map(group => group.weekStart)));
-      } catch (fetchError) {
-        console.error('Unable to load note history:', fetchError);
-        if (active) setError('History could not be loaded.');
+        if (!active || request !== requestId) return;
+        if (response.errors?.length || !response.data?.listNotes?.items) throw new Error('history_failed');
+        const fetched = mergeNotes(response.data.listNotes.items, eventsDuringQuery, username);
+        setNotes(current => mergeNotes(current, fetched, username));
+        if (!initializedRef.current) {
+          initializedRef.current = true;
+          setCollapsedWeeks(new Set(groupItemsByWeek(fetched).slice(1).map(group => group.weekStart)));
+        }
+      } catch {
+        if (active && request === requestId) setError('History could not be loaded. Please retry.');
       } finally {
-        if (active) setIsLoading(false);
+        if (active && request === requestId) setIsLoading(false);
       }
     };
-
-    fetchNotes();
+    const onNote = field => ({ data }) => {
+      if (!active) return;
+      const valid = mergeNotes([], [data?.[field]], username);
+      if (!valid.length) return;
+      eventsDuringQuery = mergeNotes(eventsDuringQuery, valid, username);
+      setNotes(current => mergeNotes(current, valid, username));
+      setNewItems(current => new Set([...current, valid[0].timestamp].slice(-100)));
+    };
+    const onSubscriptionError = () => {
+      if (!active) return;
+      setConnection(navigator.onLine ? 'Reconnecting' : 'Offline');
+      setError('Live updates are unavailable. Reconnecting…');
+      clearTimeout(retryTimer);
+      if (navigator.onLine) retryTimer = setTimeout(refresh, 5000);
+    };
+    const online = () => { if (active) refresh(); };
+    const offline = () => {
+      if (active) {
+        setConnection('Offline');
+        clearTimeout(retryTimer);
+      }
+    };
+    window.addEventListener('online', online);
+    window.addEventListener('offline', offline);
+    const stopHubListener = Hub.listen('api', ({ payload }) => {
+      if (!active || payload.event !== CONNECTION_STATE_CHANGE) return;
+      const next = payload.data.connectionState;
+      const previous = connectionState;
+      connectionState = next;
+      if (!navigator.onLine || next === ConnectionState.ConnectionDisruptedPendingNetwork ||
+          next === ConnectionState.ConnectedPendingNetwork) setConnection('Offline');
+      else if (next === ConnectionState.Connected) {
+        setConnection('Synced');
+        if (previous !== ConnectionState.Connected) void fetchNotes();
+      } else if (next === ConnectionState.Connecting) setConnection('Connecting');
+      else setConnection('Reconnecting');
+    });
+    const listeners = [];
+    try {
+      for (const field of ['onCreateNotesByOwner', 'onUpdateNotesByOwner']) {
+        listeners.push(getAmplifyClient().graphql({
+          query: subscriptions[field], variables: { owner: username }
+        }).subscribe({ next: onNote(field), error: onSubscriptionError }));
+      }
+    } catch { onSubscriptionError(); }
+    void fetchNotes();
     return () => {
       active = false;
-    };
-  }, [username]);
-
-  useEffect(() => {
-    const client = getAmplifyClient();
-    const stopHubListener = Hub.listen('api', ({ payload }) => {
-      if (payload.event === CONNECTION_STATE_CHANGE) {
-        setIsConnecting(payload.data.connectionState === 'connecting');
-      }
-    });
-
-    const noteListener = (field) => ({ data }) => upsertNote(data[field]);
-    const subscriptionErrors = (subscriptionError) => {
-      console.warn('Note history subscription error:', subscriptionError);
-      setError('Live updates are reconnecting.');
-    };
-
-    const created = client.graphql({
-      query: subscriptions.onCreateNotesByOwner,
-      variables: { owner: username }
-    }).subscribe({
-      next: noteListener('onCreateNotesByOwner'),
-      error: subscriptionErrors
-    });
-
-    const updated = client.graphql({
-      query: subscriptions.onUpdateNotesByOwner,
-      variables: { owner: username }
-    }).subscribe({
-      next: noteListener('onUpdateNotesByOwner'),
-      error: subscriptionErrors
-    });
-
-    return () => {
-      created.unsubscribe();
-      updated.unsubscribe();
+      clearTimeout(retryTimer);
+      listeners.forEach(listener => listener.unsubscribe());
       stopHubListener();
+      window.removeEventListener('online', online);
+      window.removeEventListener('offline', offline);
     };
-  }, [setIsConnecting, upsertNote, username]);
+  }, [username, revision, refresh]);
 
-  const removeHighlight = (timestamp) => {
-    setNewItems(current => {
+  return {
+    notes: notes.filter(note => note.owner === username),
+    isLoading, error, connection, newItems, collapsedWeeks, refresh,
+    removeHighlight: timestamp => setNewItems(current => {
       const next = new Set(current);
       next.delete(timestamp);
       return next;
-    });
-  };
-
-  const toggleWeekCollapse = (weekStart) => {
-    setCollapsedWeeks(current => {
+    }),
+    toggleWeekCollapse: weekStart => setCollapsedWeeks(current => {
       const next = new Set(current);
       if (next.has(weekStart)) next.delete(weekStart);
       else next.add(weekStart);
       return next;
-    });
-  };
-
-  return {
-    notes,
-    isLoading,
-    error,
-    newItems,
-    collapsedWeeks,
-    removeHighlight,
-    toggleWeekCollapse
+    })
   };
 }
-
 export default useNotesHistory;

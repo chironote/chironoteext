@@ -1,5 +1,12 @@
 # Knowledge Update Log
 
+## 2026-08-28
+
+- **Recording safety**: Updated recording and architecture concepts for isolated sessions, ordered/cancellable uploads, teardown without finalization, startup eligibility gating, and completed-only generation with separate errors.
+- **History and account safety**: Documented owner/timestamp reconciliation, realtime/query merging, real connection states, reconnect/retry behavior, account remounting, and clipboard feedback.
+- **Clinical parity**: Aligned the design concept with shared product greens, system-font adaptation, readable text, keyboard/dialog behavior, short-panel scrolling, and keep-open guidance.
+- **Release candidate**: Added [Extension Release Readiness](./development/release-readiness.md), reproducible MV3 build/package checks, privacy/reviewer handoff, security audit limits, and explicit outstanding real-Chrome acceptance. Version 1.3.0 is not approved for production or published.
+
 ## 2026-07-16
 
 - **Release**: Advanced the extension from `1.2.0` to `1.2.1` for the flat history-list and Today-aware timestamp update, then produced a fresh unpacked build.

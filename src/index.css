@@ -1,22 +1,22 @@
 :root {
-  --brand-900: #123c35;
-  --brand-800: #185247;
-  --brand-700: #1f6b5c;
-  --brand-600: #26806d;
-  --brand-100: #dceee9;
-  --brand-50: #eff8f5;
-  --ink-950: #17201e;
+  --brand-900: #1e4620;
+  --brand-800: #1e4620;
+  --brand-700: #2e6930;
+  --brand-600: #2e6930;
+  --brand-100: #e8f2e8;
+  --brand-50: #f4f8f4;
+  --ink-950: #102410;
   --ink-800: #2b3734;
-  --ink-650: #52615d;
-  --ink-500: #596863;
+  --ink-650: #5c705d;
+  --ink-500: #59705a;
   --surface-0: #ffffff;
-  --surface-50: #f8faf9;
-  --surface-100: #f1f5f3;
-  --surface-200: #e6ece9;
-  --border: #d9e2de;
-  --danger-700: #a53c3c;
-  --danger-100: #f8dddd;
-  --warning-700: #8a5b11;
+  --surface-50: #fbfdfb;
+  --surface-100: #f8f9fa;
+  --surface-200: #e2e9e2;
+  --border: #cfdbcf;
+  --danger-700: #721c24;
+  --danger-100: #f8d7da;
+  --warning-700: #856404;
   --shadow-sm: 0 1px 2px rgba(18, 60, 53, 0.05);
   --shadow-md: 0 10px 30px rgba(18, 39, 34, 0.12);
   --radius-sm: 8px;
@@ -24,7 +24,7 @@
   --radius-lg: 16px;
   color: var(--ink-950);
   background: var(--surface-100);
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
 }
 
@@ -37,13 +37,15 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  min-width: 320px;
-  min-height: 480px;
+  min-width: 0;
+  min-height: 0;
   margin: 0;
 }
 
 body {
-  overflow: hidden;
+  overflow: auto;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 button,
@@ -58,8 +60,10 @@ button {
 
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
-  outline: 3px solid rgba(38, 128, 109, 0.28);
+textarea:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--brand-700);
   outline-offset: 2px;
 }
 
@@ -78,3 +82,6 @@ textarea:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+a { color: var(--brand-700); }

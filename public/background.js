@@ -1,3 +1,3 @@
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => {
-  console.error('Unable to configure the ChiroNote side panel:', error);
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {
+  console.warn('side_panel_setup_failed');
 });

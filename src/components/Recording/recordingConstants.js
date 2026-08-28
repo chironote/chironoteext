@@ -1,4 +1,4 @@
-export const NOTE_GENERATION_RETRY_MESSAGE = 'Your note could not be generated, the system will retry in 5 min. Sorry for the inconvenience';
+export const NOTE_GENERATION_RETRY_MESSAGE = 'The note could not be generated here. Check Recent notes for any completed work before recording again.';
 export const TRANSCRIPT_WAIT_TIMEOUT_MS = 40000;
 export const NOTE_GENERATION_TIMEOUT_MS = 120000;
 export const NOTE_GENERATION_TIMEOUT_AFTER_TRANSCRIPT_FALLBACK_MS = 45000;

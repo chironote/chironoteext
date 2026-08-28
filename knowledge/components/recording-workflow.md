@@ -1,22 +1,24 @@
 ---
 type: component-architecture
 title: "Conversation Recording Workflow"
-description: "Recording controls, media lifecycle, upload ordering, transcript completion, note generation, and preserved website behavior."
+description: "Session isolation, Chrome media lifecycle, ordered uploads, generation, and failure behavior."
 resource: "../../src/components/Recording/RecordingManager.jsx"
 tags: [recording, microphone, s3, sqs, transcription, note-generation]
 ---
 
 # Conversation Recording Workflow
 
-`RecordingManager` is the public orchestration boundary. It composes `useMediaRecorderController`, `useAudioUploadQueue`, and `useNoteGeneration`; implementation details belong in those focused modules rather than the UI controller.
+RecordingManager composes the media, upload, and generation hooks. It exposes startup/recording/paused/preparing/generating state, separate structured errors, and the normal recording controls. Duplicate starts are guarded synchronously. A bounded subscription check runs before microphone acquisition; zero credits never starts capture. Pending checks and late permission results cannot restart work after teardown.
 
-The media controller obtains a mono microphone stream, records browser-compatible WebM audio, emits periodic chunks, and provides pause, resume, stop, discard, and cleanup. The upload queue sends chunks to the production Amplify Storage bucket in order and notifies the production FIFO SQS queue. The final chunk starts an AppSync subscription for the matching owner and timestamp.
+Each Chrome recording has an immutable session identity and timestamp. Chrome uses WebM, normal pause/resume, and stop/restart rotation every four minutes. Blob MIME type determines the upload extension and content type. Stop's emitted blob is held until onstop so a Finish click during rotation can correctly mark it final. Media events serialize identity lookup and upload queueing. Tracks remain live until final audio is emitted; discard/cleanup instead detach callbacks and stop without finalization. Header-only final audio produces an error instead of an indefinite spinner.
 
-When the transcript completes, `useNoteGeneration` calls the production note-generation Lambda and streams text into the workspace. Timeouts, backend error parsing, abort controllers, subscription cleanup, and retry copy remain part of the copied V4 core.
+The website-derived upload queue preserves FIFO order. It cancels Amplify upload tasks and aborts SQS requests when invalidated; old sessions cannot dispatch or update the current UI. Authentication, S3, and SQS failures terminate submission and surface a fixed message rather than retrying forever. Diagnostics contain codes only.
 
-The authenticated extension opens directly in recording readiness. A single dominant button starts the ordinary visit with the saved microphone and note-format preferences. Exam Layout and Personal Injury Case remain available in a collapsed preferences control rather than forcing a settings screen before every encounter. There is no language selector: `selectedLanguage` is stored as the string `null`, causing the existing queue message to send a JSON null and leave language detection to the transcription service.
+Backend contracts remain unchanged: protected Cognito-user audio paths, timestamp/userId S3 metadata, existing SQS message keys, owner-scoped AppSync transcription updates, and the existing note-generation Lambda POST. Recording uses Cognito userId; history queries retain the authenticated username owner convention. No Amplify or infrastructure commands belong here.
 
-Never log access tokens, transcripts, generated notes, or patient information. Keep the ChiroNote side panel open during recording and processing.
+The transcript wait falls back after 40 seconds. Generation allows 120 seconds normally or 45 seconds after fallback. A generation job owns its subscription, timers, abort controller, and stream reader. Cleanup invalidates all late work. Accumulated text detects split JSON/sentinel errors; success is emitted only at nonempty EOF. Errors clear partial output, never enter the note document, and do not promise a backend retry schedule.
+
+Preferences retain standard SOAP, optional Exam/Personal Injury, and automatic language detection. Keep the side panel open. Discard or closure cancels pending local work but cannot delete audio or processing already accepted by the backend. No offline audio/note recovery is implemented.
 
 ## Provenance
 
@@ -24,5 +26,5 @@ Never log access tokens, transcripts, generated notes, or patient information. K
 - `src/components/Recording/useMediaRecorderController.js`
 - `src/components/Recording/useAudioUploadQueue.js`
 - `src/components/Recording/useNoteGeneration.js`
-- `src/components/Recording/Recording.jsx`
-- `C:/Users/nikit/ChiroNote/website/chironoteV4/src/components/Recording/` as the copied behavior source on 2026-07-13.
+- `src/components/Recording/recordingMedia.js` and adjacent regression tests
+- Website recording safety hooks adapted on 2026-08-28; Android/iOS capture protocols intentionally excluded.

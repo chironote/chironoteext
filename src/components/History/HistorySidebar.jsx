@@ -10,7 +10,8 @@ function HistorySidebar({
   newItems,
   selectedTimestamp,
   onItemClick,
-  onToggleWeek
+  onToggleWeek,
+  onRetry
 }) {
   return (
     <section className="history-panel" aria-label="Recent notes">
@@ -21,7 +22,10 @@ function HistorySidebar({
 
       <div className="history-scroll">
         {isLoading && <p className="history-message" role="status">Loading notes...</p>}
-        {!isLoading && error && <p className="history-message error">{error}</p>}
+        {error && <div className="history-message error" role="alert">
+          <p>{error}</p>
+          <button type="button" className="secondary-button" onClick={onRetry}>Retry history</button>
+        </div>}
         {!isLoading && notes.length === 0 && (
           <div className="history-empty">
             <Icon name="file" size={20} />

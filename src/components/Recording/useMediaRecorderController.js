@@ -1,257 +1,202 @@
 import { useRef } from 'react';
-import {
-  AUDIO_CHUNK_INTERVAL_MS,
-  MIN_AUDIO_BLOB_SIZE
-} from './recordingConstants';
+import { AUDIO_CHUNK_INTERVAL_MS, MIN_AUDIO_BLOB_SIZE } from './recordingConstants';
 import { getUserId } from './recordingAuth';
+import { getRecordingMediaDescriptor } from './recordingMedia';
 
 function useMediaRecorderController({
-  timeStampRef,
-  pathStampRef,
-  filePathRef,
-  noSleepRef,
-  isDiscardingRef,
-  queueUpload,
-  clearUploadQueue,
-  cleanupNoteGeneration,
-  resetNoteGenerationState,
-  setIsRecording,
-  setIsPaused,
-  setIsPreparingTranscript,
-  setIsGeneratingSummary,
-  setIsTranscriptCompleted,
-  setTextStream
+  timeStampRef, pathStampRef, filePathRef, noSleepRef, isDiscardingRef,
+  queueUpload, startUploadSession, cancelUploadSession, cleanupNoteGeneration,
+  resetNoteGenerationState, setIsRecording, setIsPaused, setIsPreparingTranscript,
+  setIsGeneratingSummary, setIsTranscriptCompleted, setTextStream,
+  onRecordingError = () => {}
 }) {
-  const mediaRecorderRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
-  const lastUploadedChunkRef = useRef(0);
+  const sessionRef = useRef(null);
   const isRecordingRef = useRef(false);
   const isPausedRef = useRef(false);
-  const isFinalizingRecordingRef = useRef(false);
-  const streamRef = useRef(null);
-  const isAndroid = useRef(/android/i.test(navigator.userAgent)).current;
-  const isSafari = useRef(/^((?!chrome|android).)*safari/i.test(navigator.userAgent)).current;
 
-  const startChunkInterval = () => {
-    recordingIntervalRef.current = setInterval(() => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
+  const isCurrent = session => sessionRef.current === session && !session.cancelled;
+  const releaseTracks = session => {
+    session.stream?.getTracks().forEach(track => {
+      track.onended = null;
+      track.stop();
+    });
+    session.stream = null;
+  };
+
+  const cancel = (updateState = true) => {
+    const session = sessionRef.current;
+    sessionRef.current = null;
+    isDiscardingRef.current = true;
+    isRecordingRef.current = false;
+    isPausedRef.current = false;
+    if (session) {
+      session.cancelled = true;
+      clearInterval(session.interval);
+      cancelUploadSession(session.id);
+      const recorder = session.recorder;
+      if (recorder) {
+        recorder.ondataavailable = null;
+        recorder.onstop = null;
+        recorder.onerror = null;
+        if (recorder.state !== 'inactive') recorder.stop();
+      }
+      releaseTracks(session);
+    }
+    cleanupNoteGeneration();
+    noSleepRef.current?.disable();
+    if (updateState) {
+      setIsRecording(false);
+      setIsPaused(false);
+      setIsPreparingTranscript(false);
+      setIsGeneratingSummary(false);
+      setIsTranscriptCompleted(false);
+      setTextStream('');
+    }
+  };
+
+  const fail = (session, code) => {
+    if (!isCurrent(session)) return;
+    cancel();
+    onRecordingError(code);
+  };
+
+  const startInterval = session => {
+    clearInterval(session.interval);
+    session.interval = setInterval(() => {
+      if (isCurrent(session) && session.recorder?.state === 'recording') {
+        session.recorder.stop();
       }
     }, AUDIO_CHUNK_INTERVAL_MS);
   };
 
-  const startRecorder = () => {
-    if (isAndroid) {
-      mediaRecorderRef.current.start(AUDIO_CHUNK_INTERVAL_MS);
-    } else {
-      mediaRecorderRef.current.start();
-    }
-  };
-
-  const setupRecorder = async () => {
-    try {
-      setTextStream('');
-
-      let stream = streamRef.current;
-      if (!stream || !stream.active) {
-        console.log('[RecordingManager] Creating new media stream');
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            channelCount: 1,
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false
-          }
-        });
-        streamRef.current = stream;
-      } else {
-        console.log('[RecordingManager] Reusing existing media stream');
-      }
-
-      const uaString = navigator.userAgent.toLowerCase();
-      let options = {};
-
-      if (/iphone|ipad/i.test(uaString)) {
-        options = { mimeType: 'video/mp4' };
-      } else if (/firefox/i.test(uaString)) {
-        options = { mimeType: 'audio/webm' };
-      } else if (MediaRecorder.isTypeSupported('audio/webm; codecs="pcm"')) {
-        options = { mimeType: 'audio/webm; codecs="pcm"' };
-      }
-
-      mediaRecorderRef.current = new MediaRecorder(stream, options);
-
-      mediaRecorderRef.current.ondataavailable = async (event) => {
-        if (isDiscardingRef.current) {
-          return;
-        }
-
-        const isRecorderInactive = event.target?.state === 'inactive';
-        if (event.data.size >= MIN_AUDIO_BLOB_SIZE && isFinalizingRecordingRef.current && isRecorderInactive) {
-          const userId = await getUserId();
-          const timestamp = timeStampRef.current;
-          const pathstamp = pathStampRef.current;
-          const finalPath = `protected/${userId}/${timestamp}_recording_final_${pathstamp}_${lastUploadedChunkRef.current++}.webm`;
-          queueUpload(event.data, finalPath);
-        } else if (event.data.size >= MIN_AUDIO_BLOB_SIZE) {
-          const userId = await getUserId();
-          const timestamp = timeStampRef.current;
-          const pathstamp = pathStampRef.current;
-          const chunkPath = `protected/${userId}/${timestamp}_recording_chunk_${pathstamp}_${lastUploadedChunkRef.current++}.webm`;
-          queueUpload(event.data, chunkPath);
-        } else if (event.data.size > 0) {
-          console.warn(`[RecordingManager] Skipping small audio blob (${event.data.size} bytes) - likely header-only, no audio frames`);
-        }
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        if (isFinalizingRecordingRef.current) {
-          isRecordingRef.current = false;
-          isFinalizingRecordingRef.current = false;
-          mediaRecorderRef.current = null;
-          if (!isSafari && streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-          }
-        } else if (
-          isRecordingRef.current &&
-          mediaRecorderRef.current &&
-          mediaRecorderRef.current.state === 'inactive' &&
-          !isPausedRef.current &&
-          !isDiscardingRef.current
-        ) {
-          startRecorder();
-        }
-      };
-    } catch (error) {
-      console.error('Error accessing microphone', error);
-    }
-  };
-
   const startRecording = async () => {
-    lastUploadedChunkRef.current = 0;
-    isFinalizingRecordingRef.current = false;
-    resetNoteGenerationState();
+    if (sessionRef.current) return;
+    const timestamp = Date.now();
+    const session = {
+      id: `${timestamp}_${Math.random().toString(36).slice(2, 11)}`,
+      timestamp, index: 0, finish: false, cancelled: false, chain: Promise.resolve()
+    };
+    sessionRef.current = session;
+    isDiscardingRef.current = false;
+    timeStampRef.current = timestamp;
+    pathStampRef.current = session.id;
+    filePathRef.current = null;
     cleanupNoteGeneration();
+    resetNoteGenerationState();
+    setTextStream('');
+    startUploadSession(session.id);
 
-    timeStampRef.current = Date.now();
-    pathStampRef.current = Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-
-    await setupRecorder();
-    if (mediaRecorderRef.current) {
-      setIsRecording(true);
-      isRecordingRef.current = true;
-      setIsPaused(false);
-      isPausedRef.current = false;
-
-      startRecorder();
-
-      if (noSleepRef.current) {
-        noSleepRef.current.enable();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+      if (!isCurrent(session)) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
       }
-
-      startChunkInterval();
+      session.stream = stream;
+      const options = MediaRecorder.isTypeSupported('audio/webm; codecs="pcm"')
+        ? { mimeType: 'audio/webm; codecs="pcm"' } : { mimeType: 'audio/webm' };
+      const recorder = new MediaRecorder(stream, options);
+      session.recorder = recorder;
+      stream.getTracks().forEach(track => {
+        track.onended = () => fail(session, 'microphone_disconnected');
+      });
+      recorder.onerror = () => fail(session, 'recorder_failed');
+      const enqueueAudio = (blob, final) => {
+        if (!isCurrent(session)) return;
+        const index = session.index++;
+        session.chain = session.chain.then(async () => {
+          if (!isCurrent(session)) return;
+          if (blob.size < MIN_AUDIO_BLOB_SIZE) {
+            if (final) fail(session, 'recording_too_short');
+            return;
+          }
+          const userId = await getUserId();
+          if (!isCurrent(session)) return;
+          if (!userId) throw new Error('authentication_required');
+          const media = getRecordingMediaDescriptor(blob.type, recorder.mimeType);
+          const path = `protected/${userId}/${timestamp}_recording_${final ? 'final' : 'chunk'}_${session.id}_${index}.${media.extension}`;
+          queueUpload(blob, path, {
+            contentType: media.contentType, sessionId: session.id, timestamp, userId
+          });
+        }).catch(() => fail(session, 'audio_submission_failed'));
+      };
+      recorder.ondataavailable = event => {
+        if (!isCurrent(session)) return;
+        // Hold stop's blob until onstop: Finish may arrive during a rotation.
+        if (recorder.state === 'inactive') session.stoppedBlob = event.data;
+        else enqueueAudio(event.data, false);
+      };
+      recorder.onstop = () => {
+        if (!isCurrent(session)) return;
+        if (session.stoppedBlob) enqueueAudio(session.stoppedBlob, session.finish);
+        else if (session.finish) fail(session, 'recording_too_short');
+        session.stoppedBlob = null;
+        if (session.finish) {
+          releaseTracks(session);
+          session.recorder = null;
+        } else {
+          // Finish/pause can arrive between rotation's data and stop events.
+          recorder.start();
+          if (isPausedRef.current) {
+            recorder.pause();
+          }
+        }
+      };
+      recorder.start();
+      isRecordingRef.current = true;
+      isPausedRef.current = false;
+      setIsRecording(true);
+      setIsPaused(false);
+      startInterval(session);
+      // Refusing a wake lock must not fail an otherwise healthy recording.
+      try { await noSleepRef.current?.enable(); } catch { /* Wake lock unavailable. */ }
+      if (!isCurrent(session)) noSleepRef.current?.disable();
+    } catch (error) {
+      if (isCurrent(session)) {
+        cancel();
+        throw error;
+      }
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      isFinalizingRecordingRef.current = true;
-      setIsRecording(false);
-      setIsPaused(false);
-      isPausedRef.current = false;
-      mediaRecorderRef.current.stop();
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
-      setIsPreparingTranscript(true);
-      setIsTranscriptCompleted(false);
+    const session = sessionRef.current;
+    if (!session?.recorder || session.finish) return;
+    session.finish = true;
+    clearInterval(session.interval);
+    isRecordingRef.current = false;
+    isPausedRef.current = false;
+    setIsRecording(false);
+    setIsPaused(false);
+    setIsPreparingTranscript(true);
+    if (session.recorder.state !== 'inactive') {
+      session.recorder.stop();
     }
-  };
-
-  const discardRecording = () => {
-    isDiscardingRef.current = true;
-
-    if (mediaRecorderRef.current) {
-      isFinalizingRecordingRef.current = true;
-      setIsRecording(false);
-      setIsPaused(false);
-      isPausedRef.current = false;
-      mediaRecorderRef.current.stop();
-
-      if (!isSafari && streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
-    }
-
-    clearUploadQueue();
-
-    setIsPreparingTranscript(false);
-    setIsGeneratingSummary(false);
-    setIsTranscriptCompleted(false);
-    setTextStream('');
-
-    timeStampRef.current = null;
-    pathStampRef.current = null;
-    filePathRef.current = null;
-    lastUploadedChunkRef.current = 0;
-    resetNoteGenerationState();
-
-    if (noSleepRef.current) {
-      noSleepRef.current.disable();
-    }
-
-    cleanupNoteGeneration();
-
-    setTimeout(() => {
-      isDiscardingRef.current = false;
-    }, 100);
   };
 
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && isRecordingRef.current) {
-      mediaRecorderRef.current.pause();
-      setIsPaused(true);
-      isPausedRef.current = true;
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-    }
+    const session = sessionRef.current;
+    if (!session || !isRecordingRef.current || isPausedRef.current) return;
+    isPausedRef.current = true;
+    clearInterval(session.interval);
+    if (session.recorder.state === 'recording') session.recorder.pause();
+    setIsPaused(true);
   };
-
   const resumeRecording = () => {
-    if (mediaRecorderRef.current && isPausedRef.current) {
-      mediaRecorderRef.current.resume();
-      setIsPaused(false);
-      isPausedRef.current = false;
-      startChunkInterval();
-    }
-  };
-
-  const cleanupRecorder = () => {
-    stopRecording();
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
+    const session = sessionRef.current;
+    if (!session || !isRecordingRef.current || !isPausedRef.current) return;
+    isPausedRef.current = false;
+    if (session.recorder.state === 'paused') session.recorder.resume();
+    startInterval(session);
+    setIsPaused(false);
   };
 
   return {
-    startRecording,
-    stopRecording,
-    discardRecording,
-    pauseRecording,
-    resumeRecording,
-    cleanupRecorder,
-    isRecordingRef,
-    isPausedRef
+    startRecording, stopRecording, pauseRecording, resumeRecording,
+    discardRecording: () => cancel(), cancelRecordingForFailure: () => cancel(),
+    cleanupRecorder: () => cancel(false), isRecordingRef, isPausedRef
   };
 }
 

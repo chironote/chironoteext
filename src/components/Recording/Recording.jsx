@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
-import * as queries from '../../graphql/queries';
-import { getAmplifyClient } from '../../services/amplifyClient';
 import Icon from '../Icon';
 import ConfirmationPopup from './ConfirmationPopup';
 import CreditPopup from './CreditLimit';
@@ -27,6 +24,9 @@ function formatDuration(seconds) {
 
 function Recording({
   onBack,
+  isStarting,
+  error,
+  clearError,
   isRecording,
   isPaused,
   isPreparingTranscript,
@@ -38,16 +38,11 @@ function Recording({
   resumeRecording
 }) {
   const [noteSettings, setNoteSettings] = useState(readNoteSettings);
-  const [showCreditPopup, setShowCreditPopup] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [startError, setStartError] = useState('');
 
   useEffect(() => {
     localStorage.setItem('selectedLanguage', 'null');
-    fetchAuthSession({ forceRefresh: true }).catch((error) => {
-      console.warn('Unable to refresh the sign-in session:', error);
-    });
   }, []);
 
   useEffect(() => {
@@ -78,34 +73,6 @@ function Recording({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRecording]);
 
-  const fetchUserSubscription = async () => {
-    const currentUser = await getCurrentUser();
-    const response = await getAmplifyClient().graphql({
-      query: queries.getUserSubscription,
-      variables: { owner: currentUser.username }
-    });
-    return response.data.getUserSubscription;
-  };
-
-  const handleStartRecording = async () => {
-    setStartError('');
-
-    try {
-      const recordingStart = startRecording();
-      const subscription = await fetchUserSubscription();
-      await recordingStart;
-
-      if (!subscription || subscription.hoursleft <= 0) {
-        discardRecording();
-        setShowCreditPopup(true);
-      }
-    } catch (error) {
-      console.error('Unable to start recording:', error);
-      discardRecording();
-      setStartError('Recording could not start. Check your microphone and connection.');
-    }
-  };
-
   const updateSetting = (event) => {
     const { name, checked } = event.target;
     setNoteSettings(current => ({ ...current, [name]: checked }));
@@ -128,8 +95,8 @@ function Recording({
         />
       )}
 
-      {showCreditPopup ? (
-        <CreditPopup onClose={() => setShowCreditPopup(false)} />
+      {error?.code === 'recording_limit' ? (
+        <CreditPopup onClose={clearError} />
       ) : isIdle ? (
         <div className="recording-setup">
           <div className="recording-ready-copy">
@@ -138,10 +105,10 @@ function Recording({
             <p>Your usual note settings are already selected.</p>
           </div>
 
-          <button type="button" className="recording-start-card" onClick={handleStartRecording}>
+          <button type="button" className="recording-start-card" disabled={isStarting} onClick={startRecording}>
             <Icon name="mic" size={38} />
-            <strong>Start recording</strong>
-            <span>Uses your default microphone</span>
+            <strong>{isStarting ? 'Starting recording…' : 'Start recording'}</strong>
+            <span>{isStarting ? 'Checking your account and microphone' : 'Uses your default microphone'}</span>
           </button>
 
           <details className="recording-preferences">
@@ -156,7 +123,7 @@ function Recording({
               </span>
               <strong>Change</strong>
             </summary>
-            <fieldset className="settings-card">
+            <fieldset className="settings-card" disabled={isStarting}>
               <legend>Note format</legend>
               <label className="setting-row">
                 <span>
@@ -191,7 +158,7 @@ function Recording({
             </fieldset>
           </details>
 
-          {startError && <p className="recording-error" role="alert">{startError}</p>}
+          {error && <p className="recording-error" role="alert">{error.message}</p>}
           <div className="recording-ready-footer">
             <p className="recording-consent">Confirm patient consent according to your practice policy before recording.</p>
           </div>
@@ -201,8 +168,7 @@ function Recording({
           <div className="loading-spinner" aria-hidden="true" />
           <span className="processing-kicker">Recording complete</span>
           <h3>{isPreparingTranscript ? 'Preparing transcript' : 'Generating note'}</h3>
-          <p>{isPreparingTranscript ? 'The recording is safely uploaded.' : 'ChiroNote is writing the clinical note.'}</p>
-          <small>Keep the ChiroNote side panel open.</small>
+          <p>{isPreparingTranscript ? 'Uploading audio and preparing the transcript.' : 'ChiroNote is writing the clinical note.'}</p>
         </div>
       ) : (
         <div className="active-recording">
@@ -233,6 +199,7 @@ function Recording({
           </button>
         </div>
       )}
+      <p className="panel-lifecycle-hint">Keep this side panel open while recording and generating. Closing it stops local work; submitted work may still appear in Recent notes.</p>
     </section>
   );
 }

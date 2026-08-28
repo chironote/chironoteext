@@ -22,6 +22,7 @@ This knowledge layer explains the extension's stable product, architecture, visu
 ## Development
 
 - [Extension Development Workflow](./development/workflow.md) explains build, validation, unpacked installation, code conventions, and scope control.
+- [Extension Release Readiness](./development/release-readiness.md) records candidate evidence, real-Chrome acceptance gates, store handoff, and rollback limitations.
 
 ## Knowledge maintenance
 
