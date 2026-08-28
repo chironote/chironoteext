@@ -1,0 +1,84 @@
+import React from 'react';
+import Icon from '../Icon';
+import { splitNoteIntoSections } from '../../utils/noteSections';
+
+function noteTimestamp(timestamp) {
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return 'Just now';
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+function NoteWorkspace({ note, copyState, onCopySection, onNewRecording }) {
+  const noteText = note?.note?.trim() || '';
+  const sections = splitNoteIntoSections(noteText);
+  const hasSections = sections.some(section => section.label);
+
+  if (!noteText) {
+    return (
+      <section className="note-workspace empty-workspace">
+        <div className="empty-icon"><Icon name="mic" size={25} /></div>
+        <h1>Ready for the next patient</h1>
+        <p>Your usual note settings are already selected.</p>
+        <button type="button" className="primary-button" onClick={onNewRecording}>
+          <Icon name="mic" size={19} /> Start recording
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="note-workspace">
+      <div className="note-meta">
+        <strong>
+          {copyState.status === 'copied' && copyState.target === 'all'
+            ? 'Entire note copied'
+            : 'Generated note'}
+        </strong>
+        <time>{noteTimestamp(note.timestamp)}</time>
+      </div>
+
+      <article className="note-document" aria-label="Generated clinical note">
+        {hasSections ? sections.map((section, index) => (
+          <section className="note-section" key={`${section.label || 'introduction'}-${index}`}>
+            {section.label && (
+              <div className="section-heading-row">
+                <button
+                  type="button"
+                  className="section-copy-link"
+                  onClick={() => onCopySection(section.text, section.label)}
+                  title={`Copy ${section.label} section`}
+                >
+                  {section.label.toUpperCase()}:
+                </button>
+                <span className={`section-feedback ${copyState.status}`} role="status" aria-live="polite">
+                  {copyState.target === section.label && copyState.status === 'copied'
+                    ? `${section.label} copied`
+                    : copyState.target === section.label && copyState.status === 'error'
+                      ? 'Copy failed'
+                      : ''}
+                </span>
+              </div>
+            )}
+            <p>{section.text}</p>
+          </section>
+        )) : <p className="unsectioned-note">{noteText}</p>}
+      </article>
+
+      <p className="review-reminder">
+        {hasSections
+          ? 'Click a green section heading to copy that section.'
+          : 'Use the copy icon above to copy the complete note.'}
+      </p>
+      <button type="button" className="secondary-button next-visit-button" onClick={onNewRecording}>
+        <Icon name="mic" size={17} /> Start next visit
+      </button>
+    </section>
+  );
+}
+
+export default NoteWorkspace;

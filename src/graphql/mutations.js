@@ -11,6 +11,11 @@ export const createUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -25,6 +30,11 @@ export const updateUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -39,6 +49,11 @@ export const deleteUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -53,6 +68,8 @@ export const createNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -67,6 +84,8 @@ export const updateNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -81,6 +100,8 @@ export const deleteNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }

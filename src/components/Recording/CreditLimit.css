@@ -1,0 +1,43 @@
+.credit-card {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 28px;
+  background: var(--surface-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.credit-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: var(--danger-700);
+  background: #fff3f3;
+  border: 1px solid var(--danger-100);
+  border-radius: 16px;
+}
+
+.credit-card h3 {
+  margin: 17px 0 7px;
+  color: var(--ink-950);
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.credit-card p {
+  max-width: 270px;
+  margin: 0 0 20px;
+  color: var(--ink-650);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.credit-card .secondary-button {
+  margin-top: 8px;
+}

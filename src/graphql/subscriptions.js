@@ -8,6 +8,8 @@ export const onCreateNotesByOwner = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -19,6 +21,8 @@ export const onUpdateNotesByOwner = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -33,6 +37,11 @@ export const onCreateUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -47,6 +56,11 @@ export const onUpdateUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -61,6 +75,11 @@ export const onDeleteUserSubscription = /* GraphQL */ `
       tier
       hoursleft
       notesleft
+      hoursSaved
+      hoursSavedLifetime
+      isActivated
+      has3Notes
+      has5Notes
       __typename
     }
   }
@@ -75,6 +94,8 @@ export const onCreateNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -89,6 +110,8 @@ export const onUpdateNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
@@ -103,6 +126,8 @@ export const onDeleteNotes = /* GraphQL */ `
       timestamp
       transcript
       note
+      isCompleted
+      noteLabel
       __typename
     }
   }
