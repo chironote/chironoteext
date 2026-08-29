@@ -21,7 +21,7 @@ Chrome layout inspection used synthetic markup rendered from the real components
 ## Required owner acceptance before release
 
 - [ ] Install/reload the candidate, sign in and recover an expired session.
-- [ ] Open from the pinned toolbar icon; keep the panel usable while editing a dummy EHR and switching tabs.
+- [ ] On Chrome 116+, open from the pinned toolbar icon; verify the panel stays beside the originating dummy EHR tab, hides on an unopened tab, and returns on switching back. Verify same-tab navigation, separate explicit opening in another tab, and closing/reopening from both the toolbar icon and panel close button. Test both an already-open tab and a newly created tab after reload. During a synthetic recording and during generation, switch away and back and verify continuity; closing the owning tab must stop local capture. Repeat after extension reload and service-worker suspension.
 - [ ] Allow/deny/retry microphone access; verify zero-credit and failed-account-check behavior.
 - [ ] Complete a short and a longer-than-four-minute synthetic conversation; verify the final spoken phrase and note completeness.
 - [ ] Pause/resume, finish near a chunk boundary, discard during upload, and record consecutive visits.

@@ -14,7 +14,7 @@ Ignored frontend Amplify configuration must already be supplied by the owner. Ag
 
 `npm run package:release` verifies the current build, writes a candidate ZIP with root-level manifest, reopens it to check its version, and writes a SHA256 file under ignored `release-artifacts/`. It does not publish. Run the build first after every source change.
 
-The owner loads `build/` from chrome://extensions, pins the icon, and opens the global side panel. Reload the extension card after rebuilding. Test beside a dummy EHR with synthetic content. Toolbar/tab persistence, real permissions, microphone/audio completeness, authenticated backend integration, and cross-client history require actual Chrome testing; Jest and static previews do not replace that gate.
+The owner loads `build/` from chrome://extensions, pins the icon, and opens a panel scoped to the clicked tab (Chrome 116+). Reload the extension card after rebuilding. Test beside a dummy EHR with synthetic content. Verify that switching to an unopened tab hides the panel and returning restores it, that same-tab navigation retains it, and that an explicit toolbar click in another tab opens a separate workspace. Native tab hiding and recording continuity, real permissions, microphone/audio completeness, authenticated backend integration, and cross-client history require actual Chrome testing; Jest and static previews do not replace that gate.
 
 For visual-only evidence, set `CHIRONOTE_VISUAL_FIXTURES=1` when running tests. App tests export synthetic markup from real components to ignored `release-artifacts/visual/`. Serve that folder on localhost for responsive screenshots. Those fixtures contain no live authentication or recording and must not ship inside the extension ZIP.
 

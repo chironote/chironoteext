@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { formatTimestamp, getFirstSentenceOrSubstring, groupItemsByWeek } from '../../utils/historyGrouping';
 import Icon from '../Icon';
 
 function HistorySidebar({
   notes,
+  searchQuery = '',
   isLoading,
   error,
   collapsedWeeks,
@@ -13,12 +14,27 @@ function HistorySidebar({
   onToggleWeek,
   onRetry
 }) {
+  const terms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const isSearching = terms.length > 0;
+  // Search the complete label and body, not the truncated text shown in each row.
+  const searchIndex = useMemo(() => notes.map(note => ({
+    note,
+    text: `${note.noteLabel || ''} ${note.note || ''}`.toLowerCase()
+  })), [notes]);
+  const visibleNotes = isSearching
+    ? searchIndex.filter(item => terms.every(term => item.text.includes(term))).map(item => item.note)
+    : notes;
+
   return (
     <section className="history-panel" aria-label="Recent notes">
       <div className="history-heading">
         <h1>Recent notes</h1>
-        <span className="note-count" aria-label={`${notes.length} notes`}>{notes.length}</span>
+        <span className="note-count" role="status" aria-live="polite" aria-atomic="true"
+          aria-label={isSearching ? `${visibleNotes.length} of ${notes.length} notes match` : `${notes.length} notes`}>
+          {isSearching ? `${visibleNotes.length} / ${notes.length}` : notes.length}
+        </span>
       </div>
+      <p className="history-search-hint" id="history-search-hint">Search labels and full content in your loaded recent notes.</p>
 
       <div className="history-scroll">
         {isLoading && <p className="history-message" role="status">Loading notes...</p>}
@@ -26,18 +42,24 @@ function HistorySidebar({
           <p>{error}</p>
           <button type="button" className="secondary-button" onClick={onRetry}>Retry history</button>
         </div>}
-        {!isLoading && notes.length === 0 && (
+        {!isLoading && !error && notes.length === 0 && (
           <div className="history-empty">
             <Icon name="file" size={20} />
             <p>Your completed notes will appear here.</p>
           </div>
         )}
+        {!isLoading && notes.length > 0 && isSearching && visibleNotes.length === 0 && (
+          <div className="history-empty">
+            <Icon name="search" size={20} />
+            <p>No matching notes. Try another name or test, or clear the search.</p>
+          </div>
+        )}
 
-        {groupItemsByWeek(notes).map(group => {
-          const collapsed = collapsedWeeks.has(group.weekStart);
+        {groupItemsByWeek(visibleNotes).map(group => {
+          const collapsed = !isSearching && collapsedWeeks.has(group.weekStart);
           return (
             <section className="history-week" key={group.weekStart}>
-              <button
+              {isSearching ? <div className="week-button search-week-heading">{group.weekLabel}</div> : <button
                 type="button"
                 className="week-button"
                 onClick={() => onToggleWeek(group.weekStart)}
@@ -45,7 +67,7 @@ function HistorySidebar({
               >
                 <span>{group.weekLabel}</span>
                 <Icon name={collapsed ? 'chevronRight' : 'chevronDown'} size={14} />
-              </button>
+              </button>}
 
               {!collapsed && group.items.map(note => {
                 const timestamp = formatTimestamp(note.timestamp);

@@ -19,7 +19,7 @@ npm run package:release
 2. Enable **Developer mode**.
 3. Choose **Load unpacked**.
 4. Select this repository's `build` directory.
-5. Pin ChiroNote and click its icon. The icon toggles the global ChiroNote side panel beside the active tab.
+5. Pin ChiroNote and click its icon. The icon opens ChiroNote only beside that tab (Chrome 116+). Switching to a tab where you have not opened ChiroNote hides the panel; returning to the original tab shows it again. Click the icon again or use the panel close button to close it. Opening ChiroNote in another tab creates a separate workspace.
 
 After source changes, run `npm run build` and choose **Reload** on the extension card.
 

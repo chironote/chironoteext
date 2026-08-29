@@ -2,7 +2,7 @@
 
 ## Single purpose
 
-Record a visit, review generated or recent clinical notes, and explicitly copy reviewed text into an EHR. ChiroNote opens as a global Chrome side panel. It does not read EHR pages, inject content scripts, or paste into another application automatically.
+Record a visit, review generated or recent clinical notes, and explicitly copy reviewed text into an EHR. ChiroNote opens as a Chrome side panel scoped to the tab where its toolbar icon is clicked (Chrome 116+). Switching to an unopened tab hides it; returning shows it again. An explicit click in another tab opens a separate workspace. Click the icon again or use the panel close button to close it. It does not read EHR pages, inject content scripts, or paste into another application automatically.
 
 ## Reviewer setup
 

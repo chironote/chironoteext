@@ -16,6 +16,8 @@ The header reserves a small status row so its controls remain usable at 320px. R
 
 Ready recording has one dominant green start action with Note settings expanded on entry, so format controls are immediately visible before recording begins. Active recording shows a timer, explicit status, Pause/Resume, Finish visit, and separate Discard. Processing is named. A persistent hint explains the keep-panel-open lifecycle and the inability to recall accepted backend work. Do not imply the decorative bars are a measured audio meter.
 
+In history, replace the active Recent Notes toolbar highlight with a labeled Search notes input: an outlined search icon, pale surface, rounded border, 16px input text, strong green focus ring, and a labeled clear button. At narrow panel widths the search occupies its own toolbar row above New Recording/account controls. Keep the Recent notes heading, announce filtered counts, and explain that search covers labels and full content of loaded notes. Do not hide matching results behind collapsed week groups.
+
 Review prioritizes the note, section-level copy, and clinical review guidance. The labeled Copy to Clipboard action sits beside Generated Note and its timestamp; New Recording is in the toolbar instead of a duplicate footer action. Status/error feedback uses words and live announcements. Short panels scroll; the note body has its own readable scroll region. Account controls support Escape and focus return. The destructive dialog traps focus, supports Escape, and restores its trigger when possible. Reduced-motion overrides remain global.
 
 ## Provenance

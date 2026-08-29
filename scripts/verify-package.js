@@ -9,7 +9,9 @@ const config = read('src/amplifyconfiguration.json');
 const html = fs.readFileSync(path.join(root, 'build/index.html'), 'utf8');
 assert.equal(manifest.version, pkg.version, 'Package and manifest versions must match');
 assert.deepEqual(manifest.permissions, ['sidePanel']);
-assert.equal(manifest.side_panel.default_path, 'index.html');
+assert(!manifest.side_panel, 'Do not register a global side panel');
+assert(Number(manifest.minimum_chrome_version) >= 116, 'Tab-scoped opening requires Chrome 116+');
+assert.equal(manifest.background.service_worker, 'background.js');
 assert(!manifest.content_scripts && !manifest.action.default_popup, 'Keep the side-panel boundary');
 assert(manifest.host_permissions.every(origin => !origin.includes('*.')), 'No wildcard hosts');
 const required = [

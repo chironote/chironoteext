@@ -4,12 +4,12 @@ This knowledge layer explains the extension's stable product, architecture, visu
 
 ## Architecture
 
-- [Extension System Overview](./architecture/system-overview.md) explains the persistent-window boundary, authenticated client, and end-to-end data flow.
+- [Extension System Overview](./architecture/system-overview.md) explains the tab-scoped side-panel boundary, authenticated client, and end-to-end data flow.
 
 ## Components
 
 - [Conversation Recording Workflow](./components/recording-workflow.md) explains microphone capture, chunk upload, transcription completion, and streamed note generation.
-- [Recent Notes and Clipboard Handoff](./components/note-history.md) explains history loading, Today-aware timestamps, realtime updates, note selection, review, and copying.
+- [Recent Notes and Clipboard Handoff](./components/note-history.md) explains history loading, label/content search, Today-aware timestamps, realtime updates, note selection, review, and copying.
 
 ## Design
 

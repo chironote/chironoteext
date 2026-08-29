@@ -1,6 +1,8 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Simulate } from 'react-dom/test-utils';
 import App from './App';
+import { formatTimestamp } from './utils/historyGrouping';
 
 let mockManager;
 let mockCallbacks;
@@ -22,6 +24,7 @@ describe('side-panel review and account safety', () => {
   const user = { username: 'demo-clinician', userId: 'synthetic-user' };
   const button = label => container.querySelector(`[aria-label="${label}"]`);
   const render = (identity = user) => act(() => root.render(<App user={identity} signOut={signOut} />));
+  const search = value => act(() => Simulate.change(container.querySelector('input[type="search"]'), { target: { value } }));
   const capture = name => {
     if (process.env.CHIRONOTE_VISUAL_FIXTURES !== '1') return;
     const fs = require('fs');
@@ -96,8 +99,9 @@ describe('side-panel review and account safety', () => {
     mockHistory.notes = [{ owner: user.username, timestamp: '123', note: 'Synthetic complete note' }];
     act(() => button('Recent Notes').click());
     expect(container.querySelector('.history-panel')).not.toBeNull();
-    act(() => button('Recent Notes').click());
-    expect(container.querySelector('.history-panel')).not.toBeNull();
+    expect(button('Recent Notes')).toBeNull();
+    expect(container.querySelector('input[type="search"]')).not.toBeNull();
+    expect(document.activeElement).toBe(container.querySelector('input[type="search"]'));
     act(() => container.querySelector('.history-item').click());
     expect(button('Back to Notes').textContent).toBe('Back to Notes');
     expect(container.querySelector('.topbar .note-copy-button')).toBeNull();
@@ -121,6 +125,93 @@ describe('side-panel review and account safety', () => {
 
   test('keeps note settings expanded when recording setup opens', () => {
     expect(container.querySelector('.recording-preferences').open).toBe(true);
+  });
+
+  test('searches full labels and bodies immediately, including terms split across both', () => {
+    mockHistory.notes = [
+      { timestamp: '123', noteLabel: 'Alex Morgan — follow-up', note: 'Synthetic findings. '.repeat(20) + 'Positive Spurling test.' },
+      { timestamp: '124', noteLabel: 'Taylor Reed — review', note: 'Synthetic shoulder examination.' }
+    ];
+    act(() => button('Recent Notes').click());
+    expect(container.querySelector('.history-search label').textContent).toBe('Search notes');
+    expect(container.querySelector('.history-search-field > svg')).not.toBeNull();
+    capture('history-search');
+    search('  MORGAN  ');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    expect(container.querySelector('.history-item').textContent).toContain('Alex Morgan');
+    search('spurling');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    search('  Morgan   SPURLING ');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    expect(container.querySelector('.note-count').getAttribute('aria-label')).toBe('1 of 2 notes match');
+    capture('history-search-results');
+    act(() => container.querySelector('.history-item').click());
+    expect(container.querySelector('.note-document').textContent).toContain('Positive Spurling test.');
+    act(() => button('Back to Notes').click());
+    expect(container.querySelector('input[type="search"]').value).toBe('  Morgan   SPURLING ');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    act(() => button('Clear search').click());
+    expect(container.querySelectorAll('.history-item')).toHaveLength(2);
+    expect(document.activeElement).toBe(container.querySelector('input[type="search"]'));
+  });
+
+  test('search reveals collapsed weeks and clearing preserves their original state', () => {
+    mockHistory.notes = [{ timestamp: '123', noteLabel: 'Synthetic older visit', note: 'Negative Lachman test.' }];
+    mockHistory.collapsedWeeks = new Set([formatTimestamp('123').weekStart]);
+    act(() => button('Recent Notes').click());
+    expect(container.querySelectorAll('.history-item')).toHaveLength(0);
+    search('lachman');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    expect(container.querySelector('button.week-button')).toBeNull();
+    act(() => Simulate.keyDown(container.querySelector('input[type="search"]'), { key: 'Escape' }));
+    expect(container.querySelector('input[type="search"]').value).toBe('');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(0);
+    expect(mockHistory.toggleWeekCollapse).not.toHaveBeenCalled();
+  });
+
+  test('distinguishes no matches from empty history and handles whitespace and missing labels', () => {
+    mockHistory.notes = [{ timestamp: '123', note: 'Synthetic Hawkins test.' }];
+    act(() => button('Recent Notes').click());
+    search('unmatched');
+    expect(container.textContent).toContain('No matching notes.');
+    expect(container.textContent).not.toContain('Your completed notes will appear here.');
+    capture('history-search-empty');
+    search('  \t ');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    search('hawkins');
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    mockHistory.notes = [];
+    render();
+    expect(container.textContent).toContain('Your completed notes will appear here.');
+    expect(container.textContent).not.toContain('No matching notes.');
+  });
+
+  test('updates search results as notes arrive or change without dropping loading and retry feedback', () => {
+    act(() => button('Recent Notes').click());
+    search('ortho');
+    mockHistory.isLoading = true;
+    render();
+    expect(container.textContent).toContain('Loading notes...');
+    expect(container.textContent).not.toContain('No matching notes.');
+    mockHistory.notes = [{ timestamp: '123', note: 'Synthetic ortho exam.' }];
+    mockHistory.isLoading = false;
+    render();
+    expect(container.querySelectorAll('.history-item')).toHaveLength(1);
+    mockHistory.notes = [{ timestamp: '123', note: 'Synthetic updated examination.' }];
+    mockHistory.error = 'History could not be loaded. Please retry.';
+    render();
+    expect(container.querySelectorAll('.history-item')).toHaveLength(0);
+    expect(container.querySelector('[role="alert"]').textContent).toContain(mockHistory.error);
+    act(() => container.querySelector('[role="alert"] button').click());
+    expect(mockHistory.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  test('clears the search when the authenticated account changes', () => {
+    act(() => button('Recent Notes').click());
+    search('Synthetic name');
+    render({ username: 'another-clinician', userId: 'another-user' });
+    act(() => button('Recent Notes').click());
+    expect(container.querySelector('input[type="search"]').value).toBe('');
   });
 
   test('shows the Cognito email in the account menu', async () => {

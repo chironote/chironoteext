@@ -2,6 +2,12 @@
 
 ## 2026-08-28
 
+- **Recent-note search**: Replaced the active Recent Notes toolbar button with an accessible search field and icon. Local filtering covers full labels and note bodies, expands matching weeks, preserves review/back search state, and restores normal grouping on clear/Escape. Added regression coverage for content/label matching, realtime changes, empty/error states, and account reset.
+
+- **Toolbar opening correction**: Owner testing found the initial tab-scoped version opened no panel. Replaced the async click handler with native toolbar toggling and preconfigured contextual panels for existing/new/replacement tabs and browser startup. Regression tests now prohibit programmatic opening or a custom click handler. Tests do not prove real-Chrome opening or recording continuity.
+
+- **Tab-scoped side panel**: Removed the global default, configured and opened only the toolbar-clicked tab, and raised the Chrome minimum to 116 without adding permissions. Added worker/manifest regression tests and updated setup/release checks for tab hiding/restoration and separate explicit openings. Real-Chrome recording continuity while hidden remains an owner acceptance gate.
+
 - **Side-panel touch-ups**: Removed duplicate authenticated branding, labeled Recent Notes / Back to Notes navigation, added New Recording in the toolbar, and moved whole-note Copy to Clipboard beside Generated Note while retaining busy-state guards and section copy.
 - **Account and recording controls**: The account menu now displays the authenticated Cognito email when available, and New Recording uses the dark product-green hover/focus state.
 - **Recording setup**: Note settings now start expanded so format options remain visible before the first recording action.

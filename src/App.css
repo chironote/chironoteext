@@ -108,6 +108,108 @@
   flex-shrink: 0;
 }
 
+.topbar-history {
+  gap: 12px;
+}
+
+.history-search {
+  min-width: 0;
+  flex: 1;
+  padding: 4px 0;
+}
+
+.history-search label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-650);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-search-field {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  color: var(--brand-700);
+  background: var(--surface-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.history-search-field:focus-within {
+  background: var(--surface-0);
+  border-color: var(--brand-700);
+  outline: 2px solid var(--brand-700);
+  outline-offset: 2px;
+}
+
+.history-search-field > .ui-icon {
+  flex-shrink: 0;
+}
+
+.history-search input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 8px 0 0;
+  color: var(--ink-950);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+}
+
+.history-search input:focus-visible {
+  outline: none; /* The complete field has a visible focus-within outline. */
+}
+
+.history-search input::placeholder {
+  color: var(--ink-500);
+  opacity: 1;
+}
+
+.history-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.history-search-clear {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  padding: 0;
+  color: var(--ink-650);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.history-search-clear:hover {
+  color: var(--brand-800);
+  background: var(--brand-100);
+}
+
+@media (max-width: 460px) {
+  .topbar-history {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .topbar-history .history-search {
+    flex-basis: 100%;
+  }
+
+  .topbar-history .topbar-actions {
+    margin-left: auto;
+  }
+}
+
 .recording-nav {
   color: var(--brand-800);
   background: var(--brand-50);
@@ -219,12 +321,20 @@
   display: grid;
   min-width: 28px;
   height: 28px;
+  padding: 0 8px;
   place-items: center;
   color: var(--brand-800);
   background: var(--brand-100);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 750;
+}
+
+.history-search-hint {
+  margin: 0 14px 12px;
+  color: var(--ink-650);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .history-scroll {
@@ -252,7 +362,7 @@
   display: grid;
   justify-items: start;
   gap: 8px;
-  padding: 12px 4px;
+  padding: 12px 10px;
 }
 
 .history-empty .ui-icon {
@@ -290,6 +400,13 @@
 .week-button:hover {
   color: var(--ink-800);
   background: var(--brand-50);
+}
+
+.search-week-heading,
+.search-week-heading:hover {
+  color: var(--brand-800);
+  background: var(--surface-0);
+  cursor: default;
 }
 
 .history-item {

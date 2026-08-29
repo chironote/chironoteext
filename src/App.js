@@ -29,6 +29,7 @@ function AuthHeader() {
 export function VisitWorkspace({ signOut, user }) {
   const [showRecording, setShowRecording] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [historySearch, setHistorySearch] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [liveNote, setLiveNote] = useState(null);
   const [copyState, setCopyState] = useState({ status: 'idle', target: null });
@@ -38,6 +39,7 @@ export function VisitWorkspace({ signOut, user }) {
   const copyRequestRef = useRef(0);
   const accountRef = useRef(null);
   const accountButtonRef = useRef(null);
+  const historySearchRef = useRef(null);
   const notesHistory = useNotesHistory(user.username);
   const handleTextStreamUpdate = useCallback((text, { timestamp, complete }) => {
     setSelectedNote(null);
@@ -56,6 +58,10 @@ export function VisitWorkspace({ signOut, user }) {
     note.owner === liveNote.owner && String(note.timestamp) === String(liveNote.timestamp));
   const reviewNote = selectedNote || savedLiveNote || (liveNote?.complete ? liveNote : null);
   const canCopy = Boolean(reviewNote?.note?.trim()) && !isBusy && !showRecording && !showHistory;
+
+  useEffect(() => {
+    if (showHistory && !isBusy) historySearchRef.current?.focus();
+  }, [showHistory, isBusy]);
 
   useEffect(() => () => {
     clearTimeout(copyTimerRef.current);
@@ -125,14 +131,35 @@ export function VisitWorkspace({ signOut, user }) {
 
   return (
     <div className="extension-shell">
-      <header className="topbar">
-        <button type="button" className={`icon-button topbar-nav ${showHistory ? 'active' : ''}`}
+      <header className={`topbar ${showHistory && !isBusy ? 'topbar-history' : ''}`}>
+        {showHistory && !isBusy ? (
+          <div className="history-search" role="search" aria-label="Recent notes">
+            <label htmlFor="history-search">Search notes</label>
+            <div className="history-search-field">
+              <Icon name="search" size={18} />
+              <input id="history-search" ref={historySearchRef} type="search"
+                placeholder="Name or test…" value={historySearch}
+                autoComplete="off" spellCheck={false}
+                aria-describedby="history-search-hint"
+                onChange={event => setHistorySearch(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Escape') setHistorySearch('');
+                }} />
+              {historySearch && (
+                <button type="button" className="history-search-clear" aria-label="Clear search"
+                  onClick={() => { setHistorySearch(''); historySearchRef.current?.focus(); }}>
+                  <Icon name="close" size={16} />
+                </button>
+              )}
+            </div>
+          </div>
+        ) : <button type="button" className="icon-button topbar-nav"
           aria-label={!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}
           aria-pressed={showHistory} disabled={isBusy}
           onClick={() => { resetCopy(); setShowHistory(true); setShowAccountMenu(false); }}>
           <Icon name={!showRecording && !showHistory && reviewNote ? 'back' : 'history'} size={19} />
           <span>{!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}</span>
-        </button>
+        </button>}
         <div className="topbar-actions">
           <span className={`connection-indicator ${notesHistory.connection.toLowerCase()}`}
             role="status" aria-live="polite" title={notesHistory.connection}>
@@ -164,7 +191,7 @@ export function VisitWorkspace({ signOut, user }) {
       </header>
       <main className="workspace">
         {showHistory && !isBusy ? (
-          <HistorySidebar {...notesHistory} selectedTimestamp={reviewNote?.timestamp}
+          <HistorySidebar {...notesHistory} searchQuery={historySearch} selectedTimestamp={reviewNote?.timestamp}
             onItemClick={selectHistoryNote} onToggleWeek={notesHistory.toggleWeekCollapse}
             onRetry={notesHistory.refresh} />
         ) : showRecording || isBusy ? (
