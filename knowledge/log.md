@@ -1,5 +1,21 @@
 # Knowledge Update Log
 
+## 2026-09-11
+
+- **1.3.1 store update preparation**: Included the pending whole-note drag and history toolbar changes and advanced package/manifest versions. All 64 tests in 10 suites pass. Owner authorized merge and submission; browser tooling rejected gallery/dashboard access, so store upload and actual side-panel acceptance remain outstanding.
+
+## 2026-09-01
+
+- **Whole-note drag handoff**: Recent Notes rows now transfer the complete trimmed note as plain text when dragged into the parent EHR page. Row selection and reviewed clipboard copy remain available as the keyboard-accessible alternatives, and no page-reading permission or automated insertion was added.
+
+## 2026-08-29
+
+- **History toolbar balance**: Kept search, New Recording, and account controls on one aligned row at standard side-panel widths. At 380px and below, New Recording retains its accessible name while using a compact 48px microphone presentation to prevent horizontal clipping.
+- **Web Store submission handoff**: Verified the published August 29 privacy policy against current extension data handling, audited the unpublished 1.3.0 dashboard draft, prepared exact listing/privacy/reviewer copy, and generated current synthetic store icon, screenshots, and promotional tiles. Recorded the verified candidate hash and preserved owner gates for credentials, distribution choices, package upload, and final submission.
+- **Web Store draft updated**: Uploaded the verified candidate and saved the Workflow & Planning listing, all graphic assets, privacy/permission declarations, and reviewer steps. Confirmed Free of charge, Public, and All regions. Review remains disabled until the publisher adds and verifies a public contact email; no submission was made.
+- **Publisher identity prepared**: Changed the public publisher display name from `executive` to `ChiroNote`, added `development@chironote.ai` as the public contact, and sent Google's verification message. Email verification, reviewer credentials, and explicit submission approval remain outstanding.
+- **Publisher contact verified**: Confirmed `development@chironote.ai` as the verified public contact. Chrome now enables Submit for review, but reviewer credentials and explicit submission approval remain outstanding; no submission was made.
+
 ## 2026-08-28
 
 - **Recent-note search**: Replaced the active Recent Notes toolbar button with an accessible search field and icon. Local filtering covers full labels and note bodies, expands matching weeks, preserves review/back search state, and restores normal grouping on clear/Escape. Added regression coverage for content/label matching, realtime changes, empty/error states, and account reset.

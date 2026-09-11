@@ -155,6 +155,24 @@ describe('side-panel review and account safety', () => {
     expect(document.activeElement).toBe(container.querySelector('input[type="search"]'));
   });
 
+  test('drags a complete recent note into the parent page as plain text', () => {
+    mockHistory.notes = [{ timestamp: '123', noteLabel: 'Synthetic visit', note: '  Complete synthetic note.\nPLAN: Continue care.  ' }];
+    act(() => button('Recent Notes').click());
+    const historyItem = container.querySelector('.history-item');
+    const dataTransfer = { effectAllowed: '', setData: jest.fn() };
+
+    expect(historyItem.draggable).toBe(true);
+    expect(historyItem.getAttribute('aria-describedby')).toBe('history-search-hint');
+    act(() => Simulate.dragStart(historyItem, { dataTransfer }));
+    expect(dataTransfer.effectAllowed).toBe('copy');
+    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'Complete synthetic note.\nPLAN: Continue care.');
+    expect(historyItem.classList.contains('dragging')).toBe(true);
+
+    act(() => Simulate.dragEnd(historyItem, { dataTransfer }));
+    expect(historyItem.classList.contains('dragging')).toBe(false);
+    expect(container.querySelector('.history-panel')).not.toBeNull();
+  });
+
   test('search reveals collapsed weeks and clearing preserves their original state', () => {
     mockHistory.notes = [{ timestamp: '123', noteLabel: 'Synthetic older visit', note: 'Negative Lachman test.' }];
     mockHistory.collapsedWeeks = new Set([formatTimestamp('123').weekStart]);

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { formatTimestamp, getFirstSentenceOrSubstring, groupItemsByWeek } from '../../utils/historyGrouping';
 import Icon from '../Icon';
 
@@ -14,6 +14,7 @@ function HistorySidebar({
   onToggleWeek,
   onRetry
 }) {
+  const [draggedTimestamp, setDraggedTimestamp] = useState(null);
   const terms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const isSearching = terms.length > 0;
   // Search the complete label and body, not the truncated text shown in each row.
@@ -34,7 +35,10 @@ function HistorySidebar({
           {isSearching ? `${visibleNotes.length} / ${notes.length}` : notes.length}
         </span>
       </div>
-      <p className="history-search-hint" id="history-search-hint">Search labels and full content in your loaded recent notes.</p>
+      <p className="history-search-hint" id="history-search-hint">
+        Search labels and full content in your loaded recent notes. Drag a note into your EHR to transfer its complete text,
+        or select it to review and copy.
+      </p>
 
       <div className="history-scroll">
         {isLoading && <p className="history-message" role="status">Loading notes...</p>}
@@ -75,10 +79,24 @@ function HistorySidebar({
                 return (
                   <button
                     type="button"
-                    className={`history-item ${isSelected ? 'selected' : ''} ${newItems.has(note.timestamp) ? 'new' : ''}`}
+                    className={`history-item ${isSelected ? 'selected' : ''} ${newItems.has(note.timestamp) ? 'new' : ''} ${draggedTimestamp === note.timestamp ? 'dragging' : ''}`}
                     key={note.timestamp}
                     onClick={() => onItemClick(note)}
+                    draggable={Boolean(note.note?.trim())}
+                    onDragStart={event => {
+                      const noteText = note.note?.trim();
+                      if (!noteText) {
+                        event.preventDefault();
+                        return;
+                      }
+                      event.dataTransfer.effectAllowed = 'copy';
+                      event.dataTransfer.setData('text/plain', noteText);
+                      setDraggedTimestamp(note.timestamp);
+                    }}
+                    onDragEnd={() => setDraggedTimestamp(null)}
+                    aria-describedby="history-search-hint"
                     aria-current={isSelected ? 'page' : undefined}
+                    title="Drag complete note into the EHR, or select it to review"
                   >
                     <span className="history-item-main">
                       <span className="history-item-text">

@@ -1,6 +1,6 @@
 # Extension data-use disclosure draft
 
-This is an implementation-based handoff for the owner to reconcile with ChiroNote's published privacy policy and Chrome Web Store declarations. It does not assert legal compliance, retention periods, deletion guarantees, or backend practices that this repository cannot verify.
+This is an implementation-based handoff for the owner to reconcile with ChiroNote's published privacy policy and Chrome Web Store declarations. The policy published on August 29, 2026 at `https://public-docs-and-agreements.s3.us-east-2.amazonaws.com/ChiroNote-Privacy-Policy.pdf` covers the extension behavior documented below, including Chrome Web Store Limited Use. This repository still does not independently verify legal compliance, backend retention, deletion guarantees, or every processor practice.
 
 ## What the extension handles
 
@@ -16,6 +16,6 @@ Discard or panel closure cancels local capture and pending client work; it is no
 
 ## Owner verification required
 
-Confirm the public policy explains the actual backend processors, uses, retention, deletion/contact process, and applicable limited-use commitments. Declare the relevant authentication, health, personal-information, and user-content categories in the store dashboard according to the actual product data, not just extension permissions. Do not claim that no data is collected merely because clinical data is not persisted locally.
+Confirm the public policy remains current for the actual backend processors, uses, retention, deletion/contact process, and applicable limited-use commitments. Declare the relevant authentication, health, personal-information, personal-communications, and IP-address/location categories in the store dashboard according to the actual product data, not just extension permissions. Do not claim that no data is collected merely because clinical data is not persisted locally.
 
 Source: [Chrome Web Store program policies](https://developer.chrome.com/docs/webstore/program-policies/policies) and the extension's recording, history, authentication, and clipboard code. No dashboard declaration or public policy was changed by this work.
