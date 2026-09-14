@@ -1,5 +1,9 @@
 # Knowledge Update Log
 
+## 2026-09-13
+
+- **Update**: Declared OKF version 0.1 in the [knowledge index](./index.md) to align the extension with the shared ChiroNote knowledge format; verified concept metadata, provenance, index coverage, resource paths, and local links.
+
 ## 2026-09-11
 
 - **1.3.1 store update preparation**: Included the pending whole-note drag and history toolbar changes and advanced package/manifest versions. All 64 tests in 10 suites pass. Owner authorized merge and submission; browser tooling rejected gallery/dashboard access, so store upload and actual side-panel acceptance remain outstanding.

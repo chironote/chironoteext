@@ -1,3 +1,7 @@
+---
+okf_version: "0.1"
+---
+
 # ChiroNote Extension Knowledge
 
 This knowledge layer explains the extension's stable product, architecture, visual, infrastructure, and development boundaries. Start here when deciding where a change belongs or whether a website feature should be added to the compact Chrome client.
