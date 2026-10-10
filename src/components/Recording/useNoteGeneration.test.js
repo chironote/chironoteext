@@ -60,14 +60,14 @@ describe('note generation lifecycle', () => {
   test.each([
     ['partial note', '\u0000ERR', 'OR:{"message":"synthetic failure"}'],
     ['{"error', 'Message":"synthetic failure"}']
-  ])('clears partial output when an error is split across stream reads: %j', async (...parts) => {
+  ])('preserves a clinical preview but removes split error payloads: %j', async (...parts) => {
     parts.forEach(part => reader.read.mockResolvedValueOnce(chunk(part)));
     reader.read.mockResolvedValue({ done: true });
     await start();
     expect(callbacks.onError).toHaveBeenCalledTimes(1);
-    expect(callbacks.onTextStreamUpdate).toHaveBeenLastCalledWith('', { timestamp: 123, complete: false });
-    expect(callbacks.onTextStreamUpdate.mock.calls.some(([, metadata]) => metadata.complete)).toBe(false);
-    expect(callbacks.onTransitionToMainApp).not.toHaveBeenCalled();
+    const preview = parts[0] === 'partial note' ? 'partial note' : '';
+    expect(callbacks.onTextStreamUpdate).toHaveBeenLastCalledWith(preview, { timestamp: 123, complete: Boolean(preview), unsaved: true });
+    expect(callbacks.onTransitionToMainApp).toHaveBeenCalledTimes(1);
   });
 
   test('transcript timeout triggers exactly one fallback and cleanup stops its timer', async () => {

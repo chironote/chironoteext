@@ -6,6 +6,9 @@ import '@aws-amplify/ui-react/styles.css';
 import config from './amplifyconfiguration.json';
 import HistorySidebar from './components/History/HistorySidebar';
 import NoteWorkspace from './components/History/NoteWorkspace';
+import SavedNoteEditor from './components/Patients/SavedNoteEditor';
+import { leaveDrafts, hasUnsavedDraft } from './components/Patients/draftNavigation';
+import { patientNotesEnabled } from './services/patientNotes';
 import Recording from './components/Recording/Recording';
 import RecordingManager from './components/Recording/RecordingManager';
 import Icon from './components/Icon';
@@ -29,6 +32,7 @@ function AuthHeader() {
 export function VisitWorkspace({ signOut, user }) {
   const [showRecording, setShowRecording] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
   const [historySearch, setHistorySearch] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [liveNote, setLiveNote] = useState(null);
@@ -41,9 +45,9 @@ export function VisitWorkspace({ signOut, user }) {
   const accountButtonRef = useRef(null);
   const historySearchRef = useRef(null);
   const notesHistory = useNotesHistory(user.username);
-  const handleTextStreamUpdate = useCallback((text, { timestamp, complete }) => {
+  const handleTextStreamUpdate = useCallback((text, { timestamp, complete, unsaved, savedNote }) => {
     setSelectedNote(null);
-    setLiveNote(text ? { owner: user.username, timestamp, note: stripMarkdown(text), complete } : null);
+    setLiveNote(text ? { owner: user.username, timestamp, note: stripMarkdown(text), complete, unsaved, savedNote } : null);
   }, [user.username]);
   const transitionToReview = useCallback(() => {
     setShowRecording(false);
@@ -56,7 +60,7 @@ export function VisitWorkspace({ signOut, user }) {
     recordingManager.isPreparingTranscript || recordingManager.isGeneratingSummary;
   const savedLiveNote = liveNote?.complete && notesHistory.notes.find(note =>
     note.owner === liveNote.owner && String(note.timestamp) === String(liveNote.timestamp));
-  const reviewNote = selectedNote || savedLiveNote || (liveNote?.complete ? liveNote : null);
+  const reviewNote = selectedNote || liveNote?.savedNote || savedLiveNote || (liveNote?.complete ? liveNote : null);
   const canCopy = Boolean(reviewNote?.note?.trim()) && !isBusy && !showRecording && !showHistory;
 
   useEffect(() => {
@@ -98,8 +102,9 @@ export function VisitWorkspace({ signOut, user }) {
     clearTimeout(copyTimerRef.current);
     setCopyState({ status: 'idle', target: null });
   };
-  const openRecording = () => {
-    if (isBusy) return;
+  const openRecording = async () => {
+    if (isBusy || (hasUnsavedDraft() && !await leaveDrafts())) return;
+    setEditingNote(null);
     resetCopy();
     recordingManager.clearError();
     setSelectedNote(null);
@@ -108,7 +113,9 @@ export function VisitWorkspace({ signOut, user }) {
     setShowHistory(false);
     setShowAccountMenu(false);
   };
-  const selectHistoryNote = note => {
+  const selectHistoryNote = async note => {
+    if (hasUnsavedDraft() && !await leaveDrafts()) return;
+    setEditingNote(null);
     resetCopy();
     setSelectedNote(note);
     setLiveNote(null);
@@ -156,7 +163,7 @@ export function VisitWorkspace({ signOut, user }) {
         ) : <button type="button" className="icon-button topbar-nav"
           aria-label={!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}
           aria-pressed={showHistory} disabled={isBusy}
-          onClick={() => { resetCopy(); setShowHistory(true); setShowAccountMenu(false); }}>
+          onClick={() => leaveDrafts(() => { setEditingNote(null); resetCopy(); setShowHistory(true); setShowAccountMenu(false); })}>
           <Icon name={!showRecording && !showHistory && reviewNote ? 'back' : 'history'} size={19} />
           <span>{!showRecording && !showHistory && reviewNote ? 'Back to Notes' : 'Recent Notes'}</span>
         </button>}
@@ -179,8 +186,9 @@ export function VisitWorkspace({ signOut, user }) {
             {showAccountMenu && (
               <div className="account-menu" aria-label="Account options">
                 <div className="account-menu-label"><small>Signed in as</small><span>{accountEmail}</span></div>
+                <a href="https://chironote.ai/app/patients" target="_blank" rel="noopener noreferrer">Patient profiles and PDF export</a>
                 <a href="https://chironote.ai/app/account" target="_blank" rel="noopener noreferrer">Manage account on website</a>
-                <button type="button" disabled={isBusy} onClick={() => { if (!isBusy) signOut(); }}>
+                <button type="button" disabled={isBusy} onClick={() => { if (!isBusy) leaveDrafts(signOut); }}>
                   Sign out
                 </button>
                 {isBusy && <small>Finish or discard the visit before signing out.</small>}
@@ -196,10 +204,12 @@ export function VisitWorkspace({ signOut, user }) {
             onRetry={notesHistory.refresh} />
         ) : showRecording || isBusy ? (
           <Recording {...recordingManager} onBack={() => setShowRecording(true)} />
-        ) : (
+        ) : editingNote ? <SavedNoteEditor timestamp={editingNote} desktopSave onClose={() => setEditingNote(null)} onSaved={note => { setSelectedNote(note); notesHistory.refresh(); }} /> : (
+          <>{patientNotesEnabled && reviewNote?.timestamp && !reviewNote.unsaved && <div className="patient-actions"><button type="button" onClick={() => setEditingNote(reviewNote.timestamp)}>Edit and save note</button></div>}
+          <>{reviewNote?.unsaved && <p role="alert">This preview was not saved. You can copy it; retry generation from the saved recording.</p>}</>
           <NoteWorkspace note={reviewNote} copyState={copyState}
             onCopySection={copyText} onCopyNote={() => copyText(reviewNote.note, 'all')}
-            canCopy={canCopy} onNewRecording={openRecording} />
+            canCopy={canCopy} onNewRecording={openRecording} /></>
         )}
       </main>
     </div>

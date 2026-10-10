@@ -1,3 +1,5 @@
+import usePatientNames from '../Patients/usePatientNames';
+import PatientName from '../Patients/PatientName';
 import React, { useMemo, useState } from 'react';
 import { formatTimestamp, getFirstSentenceOrSubstring, groupItemsByWeek } from '../../utils/historyGrouping';
 import Icon from '../Icon';
@@ -15,13 +17,14 @@ function HistorySidebar({
   onRetry
 }) {
   const [draggedTimestamp, setDraggedTimestamp] = useState(null);
+  const patientNames = usePatientNames(notes);
   const terms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const isSearching = terms.length > 0;
   // Search the complete label and body, not the truncated text shown in each row.
   const searchIndex = useMemo(() => notes.map(note => ({
     note,
-    text: `${note.noteLabel || ''} ${note.note || ''}`.toLowerCase()
-  })), [notes]);
+    text: `${patientNames[note.patientId] || ''} ${note.visitLabel || ''} ${note.noteLabel || ''} ${note.note || ''}`.toLowerCase()
+  })), [notes, patientNames]);
   const visibleNotes = isSearching
     ? searchIndex.filter(item => terms.every(term => item.text.includes(term))).map(item => item.note)
     : notes;
@@ -36,7 +39,7 @@ function HistorySidebar({
         </span>
       </div>
       <p className="history-search-hint" id="history-search-hint">
-        Search labels and full content in your loaded recent notes. Drag a note into your EHR to transfer its complete text,
+        Search current patient names, visit labels and full content in your loaded recent notes. Drag a note into your EHR to transfer its complete text,
         or select it to review and copy.
       </p>
 
@@ -100,7 +103,7 @@ function HistorySidebar({
                   >
                     <span className="history-item-main">
                       <span className="history-item-text">
-                        {note.noteLabel || getFirstSentenceOrSubstring(note.note, 54)}
+                        <PatientName patientId={note.patientId} />{note.visitLabel || note.noteLabel || getFirstSentenceOrSubstring(note.note, 54)}
                       </span>
                       <span className="history-item-time">
                         <span>{timestamp.time}</span>

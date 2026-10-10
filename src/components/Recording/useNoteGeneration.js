@@ -6,6 +6,7 @@ import {
   NOTE_GENERATION_TIMEOUT_MS, TRANSCRIPT_WAIT_TIMEOUT_MS, NOTE_GENERATION_URL
 } from './recordingConstants';
 import { generateToken } from './recordingAuth';
+import { patientNotesEnabled, patientRequest } from '../../services/patientNotes';
 import { parseLambdaErrorPayload } from './noteGenerationErrors';
 
 function useNoteGeneration({
@@ -33,12 +34,13 @@ function useNoteGeneration({
   const fail = (job, code) => {
     if (!active(job)) return;
     cleanupNoteGeneration();
-    setTextStream('');
-    onTextStreamUpdate('', { timestamp: job.timestamp, complete: false });
+    setTextStream(job.preview || '');
+    onTextStreamUpdate(job.preview || '', { timestamp: job.timestamp, complete: Boolean(job.preview), unsaved: true });
     setIsGeneratingSummary(false);
     setIsPreparingTranscript(false);
     noSleepRef.current?.disable();
-    onError({ code, message: NOTE_GENERATION_RETRY_MESSAGE });
+    onError({ code, message: job.preview ? 'This preview was not saved. Copy it if needed, then retry from the saved recording.' : NOTE_GENERATION_RETRY_MESSAGE });
+    onTransitionToMainApp();
   };
 
   const streamResponse = async job => {
@@ -60,7 +62,8 @@ function useNoteGeneration({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: job.userId, timeStamp: job.timestamp, accessToken, noteSettings: job.noteSettings
+          userId: job.userId, timeStamp: job.timestamp, accessToken, noteSettings: job.noteSettings,
+          ...(job.visitMetadata ? { visitMetadata: job.visitMetadata } : {})
         }),
         signal: job.abort.signal
       });
@@ -78,21 +81,26 @@ function useNoteGeneration({
         text += decoder.decode(chunk.value, { stream: !chunk.done });
         // Check the accumulated text so a JSON error/sentinel split across reads cannot escape.
         if (parseLambdaErrorPayload(text)) {
+          job.preview = text.trimStart().startsWith('{') ? '' : text.split('\u0000')[0].trim();
           fail(job, 'generation_backend_failed');
           return;
         }
         if (chunk.done) break;
-        setTextStream(text);
-        onTextStreamUpdate(text, { timestamp: job.timestamp, complete: false });
+        job.preview = text.split('\u0000')[0];
+        setTextStream(job.preview);
+        onTextStreamUpdate(job.preview, { timestamp: job.timestamp, complete: false });
       }
       if (!active(job)) return;
       if (!text.trim()) {
         fail(job, 'generation_empty');
         return;
       }
+      const saved = patientNotesEnabled ? (await patientRequest('getSavedNote', { timestamp: String(job.timestamp) })).note : null;
+      if (patientNotesEnabled && !saved?.ready) { fail(job, 'generation_not_saved'); return; }
+      if (!active(job)) return;
       cleanupNoteGeneration();
-      setTextStream(text);
-      onTextStreamUpdate(text, { timestamp: job.timestamp, complete: true });
+      setTextStream(saved?.note || text);
+      onTextStreamUpdate(saved?.note || text, { timestamp: job.timestamp, complete: true, ...(saved ? { savedNote: saved } : {}) });
       setIsGeneratingSummary(false);
       setIsPreparingTranscript(false);
       noSleepRef.current?.disable();
@@ -102,9 +110,9 @@ function useNoteGeneration({
     }
   };
 
-  const subscribeToNoteCompletion = (userId, timestamp) => {
+  const subscribeToNoteCompletion = (userId, timestamp, capture) => {
     cleanupNoteGeneration();
-    const job = { userId, timestamp, noteSettings: localStorage.getItem('noteSettings') };
+    const job = { userId, timestamp, noteSettings: capture?.noteSettings ?? localStorage.getItem('noteSettings'), visitMetadata: capture?.visitMetadata };
     jobRef.current = job;
     const begin = fallback => {
       if (!active(job) || job.started) return;

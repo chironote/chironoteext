@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { AUDIO_CHUNK_INTERVAL_MS, MIN_AUDIO_BLOB_SIZE } from './recordingConstants';
 import { getUserId } from './recordingAuth';
 import { getRecordingMediaDescriptor } from './recordingMedia';
+import { captureSnapshot, recordingSettingsSnapshot } from '../../services/patientNotes';
 
 function useMediaRecorderController({
   timeStampRef, pathStampRef, filePathRef, noSleepRef, isDiscardingRef,
@@ -69,10 +70,11 @@ function useMediaRecorderController({
     }, AUDIO_CHUNK_INTERVAL_MS);
   };
 
-  const startRecording = async () => {
+  const startRecording = async (metadata) => {
     if (sessionRef.current) return;
     const timestamp = Date.now();
     const session = {
+      capture: Object.freeze({ visitMetadata: captureSnapshot(metadata), noteSettings: recordingSettingsSnapshot() }),
       id: `${timestamp}_${Math.random().toString(36).slice(2, 11)}`,
       timestamp, index: 0, finish: false, cancelled: false, chain: Promise.resolve()
     };
@@ -118,6 +120,7 @@ function useMediaRecorderController({
           const media = getRecordingMediaDescriptor(blob.type, recorder.mimeType);
           const path = `protected/${userId}/${timestamp}_recording_${final ? 'final' : 'chunk'}_${session.id}_${index}.${media.extension}`;
           queueUpload(blob, path, {
+            capture: session.capture,
             contentType: media.contentType, sessionId: session.id, timestamp, userId
           });
         }).catch(() => fail(session, 'audio_submission_failed'));

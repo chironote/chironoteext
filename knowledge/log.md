@@ -1,5 +1,9 @@
 # Knowledge Update Log
 
+## 2026-10-10
+
+- **Update**: Added patient capture/history integration, separate names/labels, guarded saved-note workflows and automatic language selection. Removed full clinical payload logging. Desktop extension has persistent Save and a website handoff for profiles/signature/export. It has no Patients directory and must never run Amplify backend operations. Local candidate only; no push, release or deployment.
+
 ## 2026-09-13
 
 - **Update**: Declared OKF version 0.1 in the [knowledge index](./index.md) to align the extension with the shared ChiroNote knowledge format; verified concept metadata, provenance, index coverage, resource paths, and local links.

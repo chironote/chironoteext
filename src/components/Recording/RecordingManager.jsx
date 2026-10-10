@@ -80,7 +80,7 @@ function RecordingManager({ onTextStreamUpdate, onTransitionToMainApp }) {
     };
   }, []);
 
-  const startRecording = async () => {
+  const startRecording = async (metadata) => {
     const lifecycle = lifecycleRef.current;
     if (!lifecycle.mounted || lifecycle.starting || isRecording || isPreparingTranscript || isGeneratingSummary) return;
     lifecycle.starting = true;
@@ -90,6 +90,9 @@ function RecordingManager({ onTextStreamUpdate, onTransitionToMainApp }) {
     setIsStarting(true);
     // Cancel the previous completed session before beginning a distinct visit.
     recorder.discardRecording();
+    // Acquire the microphone in this gesture, before account verification.
+    const recordingStarted = recorder.startRecording(metadata);
+    recordingStarted.catch(() => {});
     let verificationTimer;
     try {
       const subscription = await Promise.race([
@@ -111,10 +114,11 @@ function RecordingManager({ onTextStreamUpdate, onTransitionToMainApp }) {
         throw new Error('authentication_required');
       }
       if (Number(subscription.hoursleft) <= 0) {
+        recorder.discardRecording();
         reportRecordingError('recording_limit');
         return;
       }
-      await recorder.startRecording();
+      await recordingStarted;
       if (current()) onTextStreamUpdate('', { timestamp: timeStampRef.current, complete: false });
     } catch (failure) {
       if (!current()) return;

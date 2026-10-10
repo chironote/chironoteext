@@ -31,3 +31,11 @@ This knowledge layer explains the extension's stable product, architecture, visu
 ## Knowledge maintenance
 
 Concepts synthesize stable domains rather than mirror source documents. Update affected concepts whenever implementation changes invalidate them. Link each concept exactly once here, keep only `index.md` and `log.md` at the knowledge root, and record meaningful knowledge changes in `log.md` under the current ISO date.
+
+## Patient notes update
+
+- [Patient notes](architecture/patient-notes.md): capture, saved-note contracts, platform scope and rollout gates.
+
+## Maintenance
+
+Knowledge concepts synthesize domains. Update affected concepts and the dated knowledge log when implementation changes invalidate their facts; update this index when routing changes. Keep only index.md and log.md at the knowledge root and validate the shallow structure.
