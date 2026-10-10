@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Icon from '../Icon';
 import ConfirmationPopup from './ConfirmationPopup';
 import CreditPopup from './CreditLimit';
+import PatientCapturePicker from '../Patients/PatientCapturePicker';
+import { patientCaptureEnabled, localDate } from '../../services/patientNotes';
 import './Recording.css';
 
 function readNoteSettings() {
@@ -38,11 +40,12 @@ function Recording({
   resumeRecording
 }) {
   const [noteSettings, setNoteSettings] = useState(readNoteSettings);
+  const [visitMetadata, setVisitMetadata] = useState({ dateOfService: localDate(), visitType: null, contextMode: 'patient' });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem('selectedLanguage', 'null');
+    localStorage.removeItem('selectedLanguage');
   }, []);
 
   useEffect(() => {
@@ -105,7 +108,8 @@ function Recording({
             <p>Your usual note settings are already selected.</p>
           </div>
 
-          <button type="button" className="recording-start-card" disabled={isStarting} onClick={startRecording}>
+          {patientCaptureEnabled && <PatientCapturePicker value={visitMetadata} onChange={setVisitMetadata} />}
+          <button type="button" className="recording-start-card" disabled={isStarting} onClick={() => startRecording(patientCaptureEnabled ? visitMetadata : undefined)}>
             <Icon name="mic" size={38} />
             <strong>{isStarting ? 'Starting recording…' : 'Start recording'}</strong>
             <span>{isStarting ? 'Checking your account and microphone' : 'Uses your default microphone'}</span>
@@ -125,7 +129,7 @@ function Recording({
             </summary>
             <fieldset className="settings-card" disabled={isStarting}>
               <legend>Note format</legend>
-              <label className="setting-row">
+              {!patientCaptureEnabled && <label className="setting-row">
                 <span>
                   <strong>Exam layout</strong>
                   <small>Intake and re-exam structure</small>
@@ -139,7 +143,7 @@ function Recording({
                   />
                   <span aria-hidden="true" />
                 </span>
-              </label>
+              </label>}
               <label className="setting-row">
                 <span>
                   <strong>Personal injury</strong>

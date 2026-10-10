@@ -39,10 +39,11 @@ describe('recording startup gate', () => {
     expect(mockStart).toHaveBeenCalledTimes(1);
     expect(hook.current.isStarting).toBe(false);
   });
-  test('zero credits never opens the microphone', async () => {
+  test('zero credits discard microphone capture acquired during the gesture', async () => {
     query.mockResolvedValue({ data: { getUserSubscription: { hoursleft: 0 } } });
     await act(async () => hook.current.startRecording());
-    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(mockCancel).toHaveBeenCalled();
     expect(hook.current.error.code).toBe('recording_limit');
   });
   test('denied microphone access has a specific recoverable error', async () => {
@@ -58,7 +59,8 @@ describe('recording startup gate', () => {
     await act(async () => { void hook.current.startRecording(); await flush(); });
     act(() => window.dispatchEvent(new Event('pagehide')));
     await act(async () => { pending.resolve({ data: { getUserSubscription: { hoursleft: 1 } } }); await flush(); });
-    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(mockCancel).toHaveBeenCalled();
     expect(mockCancel).toHaveBeenCalled();
   });
 });

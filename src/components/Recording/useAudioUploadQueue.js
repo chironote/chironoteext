@@ -122,15 +122,15 @@ function useAudioUploadQueue({
 
       filePathRef.current = filePath;
 
-      const selectedLanguage = localStorage.getItem('selectedLanguage');
       const messageBody = JSON.stringify({
         userId,
         timestamp,
         path: filePath,
-        language: selectedLanguage === 'null' ? null : selectedLanguage,
+        language: 'auto',
         isFinalAudio,
         accessToken,
-        noteSettings: localStorage.getItem('noteSettings')
+        noteSettings: item.capture?.noteSettings ?? localStorage.getItem('noteSettings'),
+        ...(item.capture?.visitMetadata ? { visitMetadata: item.capture.visitMetadata } : {})
       });
 
       const filenameParts = filePath.split('/');
@@ -167,7 +167,7 @@ function useAudioUploadQueue({
       }
 
       if (isFinalAudio) {
-        onFinalAudioQueued(userId, timestamp);
+        onFinalAudioQueued(userId, timestamp, item.capture);
       }
 
       return { uploadResult };
@@ -218,6 +218,7 @@ function useAudioUploadQueue({
   };
 
   const queueUpload = (audioBlob, filePath, {
+    capture,
     contentType,
     sessionId,
     timestamp,
@@ -228,6 +229,7 @@ function useAudioUploadQueue({
     }
 
     uploadQueueRef.current.push({
+      capture,
       audioBlob,
       contentType,
       filePath,
