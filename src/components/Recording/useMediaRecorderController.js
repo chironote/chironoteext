@@ -70,11 +70,11 @@ function useMediaRecorderController({
     }, AUDIO_CHUNK_INTERVAL_MS);
   };
 
-  const startRecording = async (metadata) => {
+  const startRecording = async (metadata, settings) => {
     if (sessionRef.current) return;
     const timestamp = Date.now();
     const session = {
-      capture: Object.freeze({ visitMetadata: captureSnapshot(metadata), noteSettings: recordingSettingsSnapshot() }),
+      capture: Object.freeze({ visitMetadata: captureSnapshot(metadata), noteSettings: recordingSettingsSnapshot(settings) }),
       id: `${timestamp}_${Math.random().toString(36).slice(2, 11)}`,
       timestamp, index: 0, finish: false, cancelled: false, chain: Promise.resolve()
     };

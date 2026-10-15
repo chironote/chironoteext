@@ -50,8 +50,8 @@ export function captureSnapshot(value) {
     dateOfService: value.dateOfService || localDate(), dateOfInjury: value.dateOfInjury || null,
     visitType: value.visitType || null, contextMode: value.contextMode === 'none' ? 'none' : 'patient' });
 }
-export function recordingSettingsSnapshot() {
-  try { const value = JSON.parse(localStorage.getItem('noteSettings') || '{}'); return Object.freeze({ examLayout: value.examLayout === true, PILayout: value.PILayout === true }); }
+export function recordingSettingsSnapshot(settings) {
+  try { const value = settings ?? JSON.parse(localStorage.getItem('noteSettings') || '{}'); return Object.freeze({ examLayout: value.examLayout === true, PILayout: value.PILayout === true }); }
   catch { return Object.freeze({ examLayout: false, PILayout: false }); }
 }
 export async function exportPatientNotes(input) {

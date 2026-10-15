@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function PatientDialog({ title, children, onClose, busy = false }) {
+export default function PatientDialog({ title, children, onClose, busy = false, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
     const previous = document.activeElement;
@@ -17,7 +17,7 @@ export default function PatientDialog({ title, children, onClose, busy = false }
     if (event.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && (document.activeElement === last || document.activeElement === ref.current)) { event.preventDefault(); first.focus(); }
   };
-  return <div className="patient-modal-backdrop"><section className="patient-modal" role="dialog" aria-modal="true" aria-label={title} aria-busy={busy} tabIndex={-1} ref={ref} onKeyDown={keyDown}>
+  return <div className="patient-modal-backdrop"><section className={`patient-modal ${className}`} role="dialog" aria-modal="true" aria-label={title} aria-busy={busy} tabIndex={-1} ref={ref} onKeyDown={keyDown}>
     <div className="patient-toolbar"><h2>{title}</h2><button type="button" disabled={busy} onClick={onClose} aria-label={`Close ${title}`}>Close</button></div>{children}
   </section></div>;
 }

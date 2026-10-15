@@ -1,5 +1,11 @@
 # Knowledge Update Log
 
+## 2026-10-15
+
+- **Knowledge validation**: Repaired concept-relative provenance links and added the index route to this log. Historical website/ignored-preview evidence remains identified as external or local-only. The [visual style](./design/style.md) now records the disabled gray Exam state.
+
+- **Exam layout capture**: Updated [recording](./components/recording-workflow.md) and [patient notes](./architecture/patient-notes.md) for visible forced new-patient Exam, editable unassigned Exam, preservation of Exam/PI choices at typed-name confirmation, and separate synchronous session settings. Included the minimal typed-name capture/duplicate-check prerequisites from the prior local candidate. Source-only Git integration; no deployment, flag, version, backend or publishing change.
+
 ## 2026-10-10
 
 - **Update**: Added patient capture/history integration, separate names/labels, guarded saved-note workflows and automatic language selection. Removed full clinical payload logging. Desktop extension has persistent Save and a website handoff for profiles/signature/export. It has no Patients directory and must never run Amplify backend operations. Local candidate only; no push, release or deployment.

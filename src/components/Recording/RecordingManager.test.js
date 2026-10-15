@@ -29,6 +29,17 @@ describe('recording startup gate', () => {
   });
   afterEach(() => { hook.unmount(); warning.mockRestore(); jest.clearAllMocks(); });
 
+  test('forwards effective settings to capture synchronously before account checks', async () => {
+    const metadata = { patientId: 'fictional', visitType: 'initialExam' };
+    const settings = { examLayout: true, PILayout: true };
+    let starting;
+    act(() => {
+      starting = hook.current.startRecording(metadata, settings);
+      expect(mockStart).toHaveBeenCalledWith(metadata, settings);
+      expect(query).not.toHaveBeenCalled();
+    });
+    await act(async () => starting);
+  });
   test('duplicate starts share one pending eligibility check', async () => {
     const pending = deferred();
     query.mockReturnValue(pending.promise);

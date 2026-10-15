@@ -18,8 +18,8 @@ The panel must stay open during capture and processing. Tab switching uses Chrom
 
 ## Provenance
 
-- `src/App.js`
-- `public/manifest.json`
-- `public/background.js`
-- `src/components/Recording/RecordingManager.jsx`
+- `../../src/App.js`
+- `../../public/manifest.json`
+- `../../public/background.js`
+- `../../src/components/Recording/RecordingManager.jsx`
 - User-approved keep-panel-open lifecycle on 2026-08-28.

@@ -22,8 +22,8 @@ Use JavaScript/JSX, two spaces, single quotes, and semicolons. Preserve narrow s
 
 ## Provenance
 
-- `package.json`
-- `scripts/build.js`, `scripts/verify-package.js`, `scripts/package-release.ps1`
-- `src/App.test.jsx`
-- `AGENTS.md`
-- `release/reviewer-instructions.md`
+- `../../package.json`
+- `../../scripts/build.js`, `../../scripts/verify-package.js`, `../../scripts/package-release.ps1`
+- `../../src/App.test.jsx`
+- `../../AGENTS.md`
+- `../../release/reviewer-instructions.md`

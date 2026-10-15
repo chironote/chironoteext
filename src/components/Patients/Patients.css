@@ -50,3 +50,13 @@
 .patient-check { min-height: 44px; }
 .patient-modal label { text-align: left; }
 .patient-modal input:not([type="checkbox"]), .patient-modal select { width: 100%; min-height: 44px; padding: 10px; border: 1px solid #9bada5; border-radius: 6px; font: inherit; }
+
+.patient-capture .patient-picker-list { margin-bottom: 0; }
+.patient-capture .patient-picker-list:empty { display: none; }
+.patient-capture .patient-create-actions { margin: 8px 0 0; }
+.patient-capture .patient-create-option { width: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 10px 4px 14px; text-align: left; background: var(--brand-100); border-color: var(--border); }
+.patient-capture .patient-create-option:hover { background: var(--brand-50); border-color: var(--brand-700); }
+.patient-create-name,.patient-result-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+.patient-create-name strong { font-weight: 600; }
+.patient-create-action { flex-shrink: 0; padding: 5px 12px; border-radius: 6px; background: var(--brand-700); color: var(--surface-0); font-weight: 600; white-space: nowrap; }
+.patient-picker-list small { flex-shrink: 0; }

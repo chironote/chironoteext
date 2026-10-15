@@ -20,11 +20,16 @@ The transcript wait falls back after 40 seconds. Generation allows 120 seconds n
 
 Preferences retain standard SOAP, optional Exam/Personal Injury, and automatic language detection. Keep the side panel open. Discard or closure cancels pending local work but cannot delete audio or processing already accepted by the backend. No offline audio/note recovery is implemented.
 
+New patient capture keeps Exam layout visible, checked and disabled with a gray switch; it sends `visitType: initialExam` and effective `examLayout: true`. Unassigned capture keeps the Exam switch editable. Both direct start and the typed-name confirmation's Record without a patient retain the earlier Exam and PI selections while clearing patient/initial-exam linkage. The confirmation has no duplicate format controls. Existing patients retain the Automatic/Initial exam/Re-exam/Follow-up selector.
+
+Manual format preferences alone are persisted. Effective settings travel synchronously from Recording through RecordingManager into the recorder's immutable session snapshot before microphone permission, separately from visit metadata. Forced new-patient Exam never becomes a saved manual preference when switching or clearing patients. The final confirmation click reaches microphone acquisition without awaiting another lookup; exact-name duplicate lookup failures prevent new-patient creation and preserve the draft.
+
 ## Provenance
 
-- `src/components/Recording/RecordingManager.jsx`
-- `src/components/Recording/useMediaRecorderController.js`
-- `src/components/Recording/useAudioUploadQueue.js`
-- `src/components/Recording/useNoteGeneration.js`
-- `src/components/Recording/recordingMedia.js` and adjacent regression tests
+- `../../src/components/Recording/Recording.jsx` and its regression tests
+- `../../src/components/Recording/RecordingManager.jsx`
+- `../../src/components/Recording/useMediaRecorderController.js`
+- `../../src/components/Recording/useAudioUploadQueue.js`
+- `../../src/components/Recording/useNoteGeneration.js`
+- `../../src/components/Recording/recordingMedia.js` and adjacent regression tests
 - Website recording safety hooks adapted on 2026-08-28; Android/iOS capture protocols intentionally excluded.

@@ -51,8 +51,8 @@ For a local rollback, extract the retained baseline into a separate folder and l
 
 ## Provenance
 
-- `package.json`, `public/manifest.json`, and `scripts/verify-package.js`
-- `src/components/Recording/*.test.js`, `src/hooks/useNotesHistory.test.js`, `src/App.test.jsx`
-- `release/reviewer-instructions.md` and `release/privacy-disclosures.md`
-- `release/store-submission.md` and `scripts/generate-store-assets.ps1`
+- `../../package.json`, `../../public/manifest.json`, and `../../scripts/verify-package.js`
+- `../../src/components/Recording/` regression tests, `../../src/hooks/useNotesHistory.test.js`, `../../src/App.test.jsx`
+- `../../release/reviewer-instructions.md` and `../../release/privacy-disclosures.md`
+- `../../release/store-submission.md` and `../../scripts/generate-store-assets.ps1`
 - Local tests, builds, package verification, Web Store dashboard audit, published-policy review, and synthetic Chrome layout inspection through 2026-08-29
