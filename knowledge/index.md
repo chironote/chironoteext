@@ -39,3 +39,5 @@ Concepts synthesize stable domains rather than mirror source documents. Update a
 ## Maintenance
 
 Knowledge concepts synthesize domains. Update affected concepts and the dated knowledge log when implementation changes invalidate their facts; update this index when routing changes. Keep only index.md and log.md at the knowledge root and validate the shallow structure.
+
+See the [knowledge update log](./log.md) for dated changes.

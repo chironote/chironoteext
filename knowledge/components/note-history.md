@@ -28,8 +28,8 @@ The account menu retrieves the authenticated Cognito email through Amplify Auth;
 
 ## Provenance
 
-- `src/App.js` and `src/App.test.jsx`
-- `src/hooks/useNotesHistory.js` and its tests
-- `src/utils/mergeNotes.js`
-- `src/components/History/`
-- `src/utils/historyGrouping.js`, `src/utils/markdownStripper.js`, `src/utils/noteSections.js`
+- `../../src/App.js` and `../../src/App.test.jsx`
+- `../../src/hooks/useNotesHistory.js` and its tests
+- `../../src/utils/mergeNotes.js`
+- `../../src/components/History/`
+- `../../src/utils/historyGrouping.js`, `../../src/utils/markdownStripper.js`, `../../src/utils/noteSections.js`

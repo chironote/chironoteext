@@ -18,7 +18,7 @@ GraphQL operation documents under `src/graphql/` are client code and remain vers
 
 ## Provenance
 
-- `.gitignore`
-- `AGENTS.md`
-- `src/amplifyconfiguration.json` as a local ignored file created by the owner's 2026-07-13 Amplify pull; no sensitive values are reproduced here.
+- `../../.gitignore`
+- `../../AGENTS.md`
+- Owner's local ignored frontend configuration created by the owner's 2026-07-13 Amplify pull; no sensitive values are reproduced here.
 - User decision on 2026-07-13 to keep Amplify and Git as separate as possible.

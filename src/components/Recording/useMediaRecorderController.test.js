@@ -146,6 +146,30 @@ describe('useMediaRecorderController cleanup', () => {
     jest.clearAllMocks();
   });
 
+  test('freezes explicit settings before microphone permission and ignores later preferences', async () => {
+    const permission = createDeferred();
+    navigator.mediaDevices.getUserMedia.mockReturnValue(permission.promise);
+    const settings = { examLayout: true, PILayout: true };
+    let starting;
+    act(() => {
+      starting = controller.startRecording(undefined, settings);
+      expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+    });
+    settings.examLayout = false; settings.PILayout = false;
+    localStorage.setItem('noteSettings', JSON.stringify(settings));
+    await act(async () => {
+      permission.resolve({ getTracks: () => [track] });
+      await starting;
+      controller.stopRecording();
+      await flushPromises();
+    });
+    const capture = callbacks.queueUpload.mock.calls[0][2].capture;
+    expect(capture.noteSettings).toEqual({ examLayout: true, PILayout: true });
+    expect(Object.isFrozen(capture)).toBe(true);
+    expect(Object.isFrozen(capture.noteSettings)).toBe(true);
+    localStorage.clear();
+  });
+
   test('unmount cleanup cancels the session without finalizing or setting UI state', async () => {
     await act(async () => {
       await controller.startRecording();

@@ -22,6 +22,12 @@ Required coordinated release: additive schema/GSI and Cognito+IAM resolvers, ded
 
 Local validation uses synthetic patients, mocked services, unit tests and feature-enabled production builds. Browser responsive QA is a local fixture harness importing these actual components, not a live backend sign-off. Actual iPhone/Android permission/background/rotation/auth checks, provider language accuracy/latency and approved cross-service staging remain release gates.
 
+New patient capture keeps Exam layout visible, checked and disabled with a gray switch; it sends `visitType: initialExam` and effective `examLayout: true`. Unassigned capture keeps the Exam switch editable. Both direct start and the typed-name confirmation's Record without a patient retain the earlier Exam and PI selections while clearing patient/initial-exam linkage. The confirmation has no duplicate format controls. Existing patients retain the Automatic/Initial exam/Re-exam/Follow-up selector.
+
+Manual format preferences alone are persisted. Effective settings travel synchronously from Recording through RecordingManager into the recorder's immutable session snapshot before microphone permission, separately from visit metadata. Forced new-patient Exam never becomes a saved manual preference when switching or clearing patients. The final confirmation click reaches microphone acquisition without awaiting another lookup; exact-name duplicate lookup failures prevent new-patient creation and preserve the draft.
+
+This checkbox fix is source-only; no feature flags, backend ICD rules, version or store release state were changed.
+
 ## Provenance
 
 - [Current implementation](../../src) is authoritative for behavior.

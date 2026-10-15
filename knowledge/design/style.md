@@ -20,10 +20,12 @@ In history, replace the active Recent Notes toolbar highlight with a labeled Sea
 
 Review prioritizes the note, section-level copy, and clinical review guidance. The labeled Copy to Clipboard action sits beside Generated Note and its timestamp; New Recording is in the toolbar instead of a duplicate footer action. Status/error feedback uses words and live announcements. Short panels scroll; the note body has its own readable scroll region. Account controls support Escape and focus return. The destructive dialog traps focus, supports Escape, and restores its trigger when possible. Reduced-motion overrides remain global.
 
+New-patient Exam layout remains visible with a checked, disabled gray switch. The disabled row uses the existing neutral surface and ink tokens, a non-interactive cursor, and the native disabled input state. Unassigned visits retain an editable Exam switch beside the existing Personal injury control.
+
 ## Provenance
 
-- `src/index.css`, `src/App.css`, `src/components/Recording/Recording.css`
-- `src/components/Recording/ConfirmationPopup.jsx`
-- Website `knowledge/development/STYLE.md` reviewed 2026-08-28
+- `../../src/index.css`, `../../src/App.css`, `../../src/components/Recording/Recording.css`
+- `../../src/components/Recording/ConfirmationPopup.jsx`
+- Website-owned style concept reviewed 2026-08-28
 - UI/UX Pro Max accessibility guidance
-- Synthetic real-component layout previews under ignored `release-artifacts/visual/`; these are not authenticated side-panel acceptance evidence.
+- Synthetic real-component layout previews in the ignored release-artifacts visual folder; these are not authenticated side-panel acceptance evidence.

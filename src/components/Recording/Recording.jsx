@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Icon from '../Icon';
 import ConfirmationPopup from './ConfirmationPopup';
 import CreditPopup from './CreditLimit';
 import PatientCapturePicker from '../Patients/PatientCapturePicker';
+import PatientDialog from '../Patients/PatientDialog';
 import { patientCaptureEnabled, localDate } from '../../services/patientNotes';
 import './Recording.css';
 
@@ -42,6 +43,11 @@ function Recording({
   const [noteSettings, setNoteSettings] = useState(readNoteSettings);
   const [visitMetadata, setVisitMetadata] = useState({ dateOfService: localDate(), visitType: null, contextMode: 'patient' });
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const patientPickerRef = useRef(null);
+  const [patientDraft, setPatientDraft] = useState('');
+  const [pendingPatient, setPendingPatient] = useState(null);
+  const [checkingPatient, setCheckingPatient] = useState(false);
+  const checkingPatientRef = useRef(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -88,9 +94,49 @@ function Recording({
   };
 
   const isIdle = !isRecording && !isPreparingTranscript && !isGeneratingSummary;
+  // Forced new-patient layout is session state, never the saved manual preference.
+  const newPatient = patientCaptureEnabled && Boolean(visitMetadata.patientId && visitMetadata.patientName);
+  const effectiveExamLayout = newPatient || noteSettings.examLayout;
+  const beginRecording = metadata => {
+    const isNewPatient = patientCaptureEnabled && Boolean(metadata?.patientId && metadata?.patientName);
+    const settings = { ...noteSettings, examLayout: isNewPatient || noteSettings.examLayout };
+    const capture = isNewPatient ? { ...metadata, visitType: 'initialExam' } : metadata;
+    // The final recording gesture reaches microphone acquisition without an await.
+    startRecording(patientCaptureEnabled ? capture : undefined, settings);
+  };
+  const requestRecording = async () => {
+    if (isStarting || !isIdle || pendingPatient || checkingPatientRef.current) return;
+    if (patientCaptureEnabled && !visitMetadata.patientId && patientDraft) {
+      checkingPatientRef.current = true; setCheckingPatient(true);
+      try {
+        const patient = await patientPickerRef.current?.prepareNewPatient();
+        if (patient) setPendingPatient(patient);
+      } finally { checkingPatientRef.current = false; setCheckingPatient(false); }
+      return;
+    }
+    beginRecording(visitMetadata);
+  };
+  const recordWithPatient = () => {
+    const metadata = pendingPatient;
+    setPendingPatient(null); setVisitMetadata(metadata);
+    beginRecording(metadata);
+  };
+  const recordUnassigned = () => {
+    const metadata = { ...visitMetadata, patientId: null, patientName: undefined, displayName: '', dateOfInjury: null, visitType: null, initialExam: false };
+    setPendingPatient(null); setVisitMetadata(metadata);
+    beginRecording(metadata);
+  };
 
   return (
     <section className="recording-panel">
+      {pendingPatient && <PatientDialog title="Create new patient?" className="recording-patient-confirmation" onClose={() => setPendingPatient(null)}>
+        <p className="recording-patient-prompt"><strong>{pendingPatient.patientName}</strong></p>
+        <p>Create a new patient with this name, or record without linking it to a patient.</p>
+        <div className="recording-patient-actions">
+          <button type="button" className="secondary-button" onClick={recordUnassigned}>Record without a patient</button>
+          <button type="button" className="primary-button" onClick={recordWithPatient}>Create patient &amp; record</button>
+        </div>
+      </PatientDialog>}
       {showConfirmation && (
         <ConfirmationPopup
           onConfirm={confirmDiscard}
@@ -108,18 +154,18 @@ function Recording({
             <p>Your usual note settings are already selected.</p>
           </div>
 
-          {patientCaptureEnabled && <PatientCapturePicker value={visitMetadata} onChange={setVisitMetadata} />}
-          <button type="button" className="recording-start-card" disabled={isStarting} onClick={() => startRecording(patientCaptureEnabled ? visitMetadata : undefined)}>
+          {patientCaptureEnabled && <PatientCapturePicker ref={patientPickerRef} value={visitMetadata} onChange={setVisitMetadata} onDraftChange={setPatientDraft} disabled={isStarting || Boolean(pendingPatient)} />}
+          <button type="button" className="recording-start-card" disabled={isStarting || checkingPatient || Boolean(pendingPatient)} onClick={requestRecording}>
             <Icon name="mic" size={38} />
-            <strong>{isStarting ? 'Starting recording…' : 'Start recording'}</strong>
+            <strong>{checkingPatient ? 'Checking patient…' : isStarting ? 'Starting recording…' : 'Start recording'}</strong>
             <span>{isStarting ? 'Checking your account and microphone' : 'Uses your default microphone'}</span>
           </button>
 
           <details className="recording-preferences" open>
             <summary>
               <span>
-                {noteSettings.examLayout || noteSettings.PILayout
-                  ? [noteSettings.examLayout && 'Exam layout', noteSettings.PILayout && 'Personal injury']
+                {effectiveExamLayout || noteSettings.PILayout
+                  ? [effectiveExamLayout && 'Exam layout', noteSettings.PILayout && 'Personal injury']
                     .filter(Boolean)
                     .join(' · ')
                   : 'Standard SOAP'}
@@ -127,9 +173,9 @@ function Recording({
               </span>
               <strong>Change</strong>
             </summary>
-            <fieldset className="settings-card" disabled={isStarting}>
+            <fieldset className="settings-card" disabled={isStarting || checkingPatient || Boolean(pendingPatient)}>
               <legend>Note format</legend>
-              {!patientCaptureEnabled && <label className="setting-row">
+              {(!patientCaptureEnabled || !visitMetadata.patientId || newPatient) && <label className={`setting-row${newPatient ? ' setting-row-disabled' : ''}`}>
                 <span>
                   <strong>Exam layout</strong>
                   <small>Intake and re-exam structure</small>
@@ -138,7 +184,8 @@ function Recording({
                   <input
                     type="checkbox"
                     name="examLayout"
-                    checked={noteSettings.examLayout}
+                    checked={effectiveExamLayout}
+                    disabled={newPatient}
                     onChange={updateSetting}
                   />
                   <span aria-hidden="true" />

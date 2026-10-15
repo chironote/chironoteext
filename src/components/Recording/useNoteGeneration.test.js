@@ -45,6 +45,22 @@ describe('note generation lifecycle', () => {
   };
   const chunk = text => ({ value: new Uint8Array(Buffer.from(text)), done: false });
 
+  test('posts the captured settings and linkage independently of later preferences', async () => {
+    const capture = Object.freeze({
+      noteSettings: Object.freeze({ examLayout: true, PILayout: true }),
+      visitMetadata: Object.freeze({ patientId: 'fictional', visitType: 'initialExam' })
+    });
+    reader.read.mockResolvedValueOnce(chunk('Synthetic note')).mockResolvedValue({ done: true });
+    await act(async () => {
+      hook.current.subscribeToNoteCompletion('user', 123, capture);
+      localStorage.setItem('noteSettings', JSON.stringify({ examLayout: false, PILayout: false }));
+      listener.next({ data: { onUpdateNotesByOwner: { timestamp: '123', isCompleted: true } } });
+      await flush();
+    });
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toMatchObject(capture);
+    localStorage.clear();
+  });
+
   test('holds generation busy until EOF and emits a completed identity only then', async () => {
     const tail = deferred();
     reader.read.mockResolvedValueOnce(chunk('SUBJECTIVE: Synthetic note')).mockReturnValueOnce(tail.promise);
