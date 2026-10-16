@@ -187,6 +187,7 @@ export function VisitWorkspace({ signOut, user }) {
               <div className="account-menu" aria-label="Account options">
                 <div className="account-menu-label"><small>Signed in as</small><span>{accountEmail}</span></div>
                 <a href="https://chironote.ai/app/patients" target="_blank" rel="noopener noreferrer">Patient profiles and PDF export</a>
+                <a href="https://chironote.ai/app/settings" target="_blank" rel="noopener noreferrer">Custom instructions on website</a>
                 <a href="https://chironote.ai/app/account" target="_blank" rel="noopener noreferrer">Manage account on website</a>
                 <button type="button" disabled={isBusy} onClick={() => { if (!isBusy) leaveDrafts(signOut); }}>
                   Sign out
