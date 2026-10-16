@@ -2,6 +2,8 @@
 
 ## 2026-10-15
 
+- **Copy text preservation**: Updated [clipboard behavior](./components/note-history.md) for copy-only cleanup that preserves lists, numbering, quotes, rules and literal punctuation while removing paired Markdown formatting. Generation/display and SOAP extraction are unchanged; added separate helper and regression coverage. Source-only integration; no publication.
+
 - **Custom Instructions handoff**: Added a direct website Settings link to the existing account menu. Preferences stay account-owned and apply through the shared generator; no extension editor, permission, version or backend change. Updated [system overview](./architecture/system-overview.md). Store publication and authenticated Chrome acceptance remain separate.
 
 - **Knowledge validation**: Repaired concept-relative provenance links and added the index route to this log. Historical website/ignored-preview evidence remains identified as external or local-only. The [visual style](./design/style.md) now records the disabled gray Exam state.
