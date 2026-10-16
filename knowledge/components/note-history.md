@@ -20,7 +20,7 @@ While history is open, the Recent Notes toolbar button is replaced by a labeled 
 
 Completed streamed notes reconcile with history by owner/timestamp, not text equality. Startup, recording, preparation, and generation block copying. A failed partial stream or error is never treated as a completed clinical note. Account identity changes remount and clear the complete workspace.
 
-Subjective, Objective, Assessment, Plan, and Treatment headings copy their section body. Copy to Clipboard beside the Generated Note label and timestamp copies the whole note. Markdown/HTML cleanup is preserved. Copy is always user initiated; success and failure are announced, and whole-note failure suggests manual selection. Late clipboard promises cannot attach feedback to a different note. The review reminder asks clinicians to verify clinical accuracy before EHR entry.
+Subjective, Objective, Assessment, Plan, and Treatment headings copy their section body. Copy to Clipboard beside the Generated Note label and timestamp copies the whole note. HTML extraction is preserved; copy-specific Markdown cleanup follows the policy below. Copy is always user initiated; success and failure are announced, and whole-note failure suggests manual selection. Late clipboard promises cannot attach feedback to a different note. The review reminder asks clinicians to verify clinical accuracy before EHR entry.
 
 Each complete Recent Notes row is also draggable. Starting a drag publishes the trimmed complete note only as `text/plain` with a copy effect, allowing the browser or destination EHR to handle the drop in the parent page. The row remains selectable for review and explicit clipboard copy, providing the keyboard-accessible alternative to the pointer gesture. Dragging is visibly indicated and does not log note content, inspect the EHR, request page permissions, or automate insertion.
 
@@ -33,3 +33,8 @@ The account menu retrieves the authenticated Cognito email through Amplify Auth;
 - `../../src/utils/mergeNotes.js`
 - `../../src/components/History/`
 - `../../src/utils/historyGrouping.js`, `../../src/utils/markdownStripper.js`, `../../src/utils/noteSections.js`
+
+
+## Copy cleanup policy — 2026-10-15
+
+Copy actions preserve list prefixes, numbering, blockquote markers, horizontal rules, and literal asterisks/underscores. They remove heading markers and paired bold, italic, strikethrough and inline-code delimiters; links retain visible text without URLs, and outer whitespace is trimmed. Whole-note HTML extraction and SOAP section-body selection remain in place. Copy uses `src/utils/copyText.js`; generated text, display cleanup and history-to-clipboard loading retain their existing `stripMarkdown`/`extractPlainText` behavior. Fenced-code handling retains the legacy cleanup behavior. These copy rules cannot restore markers already removed by the existing display cleanup. Source integration does not publish the website or extension.

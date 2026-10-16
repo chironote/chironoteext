@@ -13,7 +13,7 @@ import Recording from './components/Recording/Recording';
 import RecordingManager from './components/Recording/RecordingManager';
 import Icon from './components/Icon';
 import useNotesHistory from './hooks/useNotesHistory';
-import { extractPlainText } from './utils/historyGrouping';
+import { extractCopyText } from './utils/copyText';
 import { stripMarkdown } from './utils/markdownStripper';
 import textLogo from './assets/fulllogo.svg';
 import './App.css';
@@ -125,7 +125,7 @@ export function VisitWorkspace({ signOut, user }) {
   };
   const copyText = async (text, target) => {
     if (!canCopy) return;
-    const plainText = extractPlainText(text || '');
+    const plainText = extractCopyText(text || '');
     if (!plainText) return;
     const request = ++copyRequestRef.current;
     let status = 'copied';
