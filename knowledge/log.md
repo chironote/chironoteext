@@ -2,6 +2,8 @@
 
 ## 2026-10-15
 
+- **Custom Instructions handoff**: Added a direct website Settings link to the existing account menu. Preferences stay account-owned and apply through the shared generator; no extension editor, permission, version or backend change. Updated [system overview](./architecture/system-overview.md). Store publication and authenticated Chrome acceptance remain separate.
+
 - **Knowledge validation**: Repaired concept-relative provenance links and added the index route to this log. Historical website/ignored-preview evidence remains identified as external or local-only. The [visual style](./design/style.md) now records the disabled gray Exam state.
 
 - **Exam layout capture**: Updated [recording](./components/recording-workflow.md) and [patient notes](./architecture/patient-notes.md) for visible forced new-patient Exam, editable unassigned Exam, preservation of Exam/PI choices at typed-name confirmation, and separate synchronous session settings. Included the minimal typed-name capture/duplicate-check prerequisites from the prior local candidate. Source-only Git integration; no deployment, flag, version, backend or publishing change.
