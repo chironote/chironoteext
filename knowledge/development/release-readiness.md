@@ -1,12 +1,42 @@
 ---
 type: release-readiness
 title: "Extension Release Readiness"
-description: "Version 1.3.1 update evidence, historical 1.3.0 preparation, and remaining store validation."
+description: "Recovered-note production preparation, observed store-access limits, historical release evidence, and remaining acceptance gates."
 resource: "../../release/reviewer-instructions.md"
 tags: [release, chrome-web-store, validation, rollback]
 ---
 
 # Extension Release Readiness
+
+## Recovered-note production preparation — 2026-10-21
+
+The owner authorized the existing public Chrome extension update on October 21. PR [5](https://github.com/chironote/chironoteext/pull/5), reviewed head `68af8e79d2df034be0ccf094a2088b3b52e2fa46`, was merged into main as `f2310c84636cbbf8f746824744292812a7d6d70b`. The merge tree equals the reviewed head. Independent read-only source review found no remaining blocking finding. Exact-head local validation passed 16 suites / 115 tests, production build/MV3 verification and 8-concept OKS validation. There are no configured GitHub checks; the empty check list is not a CI pass.
+
+The [recording workflow](../components/recording-workflow.md) describes recovered-result lookup, split-control buffering and preserved session ownership. The source compatibility gate permits independent staging with the current backend: the existing request/API and NOTE_RECOVERED formats are unchanged, and clients do not consume private completion receipts. This release does not modify backend functions, website deployment, native apps or patient feature flags. Authenticated real-Chrome recovered-note retrieval, side-panel/microphone workflows, history/copy and subsequent conditional Save remain separate acceptance gaps; synthetic tests do not prove them.
+
+The owner reported uploading and submitting the October 16 package `production-2026-10-16-eaf0bc3/chironote-extension-1.3.1.zip` for public review. That report supersedes earlier statements that no submission was known. Approval, automatic-publication choice and public availability were not verified. Do not infer publication from elapsed time or overwrite a pending submission.
+
+Early access preflight on October 21 again returned `Not allowed` for the publisher dashboard. No alternate automation surface or new API credentials were used. Published/draft/pending versions remain unknown; source metadata is still 1.3.1 and must not be presented as a new upload package. The final upload version is held until a current owner-controlled Package/Status observation establishes an unused higher version and any pending-review constraints. Local integration/build preparation may continue while that access handoff is pending.
+
+Preserve the old versioned release directories and hashes as fallback/provenance evidence. No new upload, review submission or publication is claimed by this preparation record. The exact final ZIP/source/hash and observed store state will be recorded when the version gate clears. Git integration alone does not deploy.
+
+## Production authorization — 2026-10-16
+
+The owner subsequently supplied the Package dashboard screenshot showing **Draft 1.3.0 / Published 1.3.0**, establishing that source version 1.3.1 is higher than both displayed versions. The already-validated ZIP was copied unchanged to `release-artifacts/production-2026-10-16-eaf0bc3/chironote-extension-1.3.1.zip`; SHA-256 remains `43b804e5698ad0bf8dbccf56a3d3cad5e2f95f557a57197f70ae2edfede244d2`. Root manifest/version, excluded source maps, archive hash and unchanged remote main were rechecked. This supersedes the earlier unknown displayed store version below. Upload acceptance, review submission and publication remain unverified; the owner-controlled dashboard handoff is still required. Do not upload the older September archive with the same version from the release-artifacts root.
+
+The owner explicitly changed the destination from testers to the existing public production listing and authorized publishing the latest extension. An isolated tester audience is no longer a scope gate. Fresh fetch still resolves main to `eaf0bc35d41558bbb25bc5e1f160ee96f403f414`, with no open PRs. The checks and validation package below remain source evidence; live store history must establish an unused version before creating the final upload package. No established Chrome Web Store publishing API tool, repository workflow, or Chrome/Web Store environment configuration was found. The browser access block remains in effect, so production upload, review submission and actual availability are still unverified and no publication is claimed. Publisher-dashboard access requires an owner handoff; do not bypass the browser policy. Patient feature flags remain disabled pending their separate coordinated readiness gates.
+
+## Tester preparation — 2026-10-15
+
+Fresh fetch and remote main verification selected `eaf0bc35d41558bbb25bc5e1f160ee96f403f414` from `chironote/chironoteext`. Main includes patient capture/Save (PR 1), new/unassigned Exam Layout (PR 2), the website Custom Instructions Settings link (PR 3), and copy text structure preservation (PR 4). GitHub returned no open PRs and no other remote branches. The earlier Settings verification chat assessed `d823964`, before PR 4; this package includes that newer integration. Mobile Wi-Fi recovery/diagnostics belongs to the mobile repositories and is not an extension release dependency.
+
+Validation passed: 14 Jest suites / 94 tests using `npm test -- --runInBand`, production build, MV3 verifier, ZIP root manifest/version verification, and runtime dependency audit (zero vulnerabilities). No Amplify operations or backend mutations occurred. Patient-note/capture feature flags remain unset (patient notes disabled); the integrated Exam capture fix remains gated. Do not enable patient features merely to release: the coordinated backend prerequisites in [patient notes](../architecture/patient-notes.md) require independent readiness evidence. The Settings link hands off to the website; it does not prove deployment of the website or Custom Instructions backend.
+
+The validation-only package is `release-artifacts/tester-2026-10-15-eaf0bc3/chironote-extension-1.3.1-eaf0bc3-validation-only.zip`, SHA-256 `43b804e5698ad0bf8dbccf56a3d3cad5e2f95f557a57197f70ae2edfede244d2`. Its version remains source version 1.3.1: it is **not a verified unused store version**, upload candidate, or published tester release. The existing September 1.3.1 ZIP/hash were preserved, including at their original paths; they are historical evidence, not proof of the currently published package. Task-local provenance is stored beside the validation package.
+
+Tester publication is blocked. The established workflow documents item `ikinlmngbmdglllenhhllneifmcbaedj` as Public / all regions, with no documented isolated tester mechanism or audience. Browser automation rejected both the publisher dashboard and public listing with `Not allowed`; live package history, version allocation, tester distribution and availability could not be verified. No upload, submission, visibility change, new listing, or publication occurred. A publisher access handoff must establish an existing isolated tester channel/audience or the owner must choose a separate tester destination before store work continues. Authorization for tester distribution does not authorize updating public users.
+
+Chrome extension-management navigation was explicitly blocked by browser security policy. No workaround was attempted. Real toolbar/side-panel persistence, sign-in, microphone controls, generation, history, clipboard/drag, and cross-client/device acceptance remain unverified; synthetic tests do not satisfy these checks. Continue with the acceptance checklist below after loading the candidate through an authorized owner-controlled Chrome session.
 
 ## Update status — 2026-09-11
 
