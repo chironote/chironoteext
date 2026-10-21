@@ -7,7 +7,7 @@ import {
 } from './recordingConstants';
 import { generateToken } from './recordingAuth';
 import { patientNotesEnabled, patientRequest } from '../../services/patientNotes';
-import { parseLambdaErrorPayload } from './noteGenerationErrors';
+import { createNoteGenerationStreamParser, parseLambdaErrorPayload } from './noteGenerationErrors';
 
 function useNoteGeneration({
   noSleepRef, setTextStream, setIsPreparingTranscript, setIsGeneratingSummary,
@@ -39,7 +39,7 @@ function useNoteGeneration({
     setIsGeneratingSummary(false);
     setIsPreparingTranscript(false);
     noSleepRef.current?.disable();
-    onError({ code, message: job.preview ? 'This preview was not saved. Copy it if needed, then retry from the saved recording.' : NOTE_GENERATION_RETRY_MESSAGE });
+    onError({ code, message: job.preview ? 'Saving could not be confirmed. Keep this preview and check saved notes before retrying. Copy it if needed, then retry from the saved recording.' : NOTE_GENERATION_RETRY_MESSAGE });
     onTransitionToMainApp();
   };
 
@@ -75,15 +75,20 @@ function useNoteGeneration({
       job.reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let text = '';
+      let recovered = false;
+      const parseStream = createNoteGenerationStreamParser();
       while (active(job)) {
         const chunk = await job.reader.read();
         if (!active(job)) return;
-        text += decoder.decode(chunk.value, { stream: !chunk.done });
-        // Check the accumulated text so a JSON error/sentinel split across reads cannot escape.
-        if (parseLambdaErrorPayload(text)) {
-          job.preview = text.trimStart().startsWith('{') ? '' : text.split('\u0000')[0].trim();
-          fail(job, 'generation_backend_failed');
-          return;
+        const frame = parseStream(decoder.decode(chunk.value, { stream: !chunk.done }), chunk.done);
+        text += frame.text;
+        const error = frame.error || parseLambdaErrorPayload(text);
+        if (error) {
+          job.preview = text.trimStart().startsWith('{') ? '' : text;
+          if (error.code !== 'NOTE_RECOVERED') { fail(job, 'generation_backend_failed'); return; }
+          recovered = true;
+          Promise.resolve().then(() => job.reader.cancel()).catch(() => {});
+          break;
         }
         if (chunk.done) break;
         job.preview = text.split('\u0000')[0];
@@ -91,12 +96,12 @@ function useNoteGeneration({
         onTextStreamUpdate(job.preview, { timestamp: job.timestamp, complete: false });
       }
       if (!active(job)) return;
-      if (!text.trim()) {
+      if (!text.trim() && !recovered) {
         fail(job, 'generation_empty');
         return;
       }
-      const saved = patientNotesEnabled ? (await patientRequest('getSavedNote', { timestamp: String(job.timestamp) })).note : null;
-      if (patientNotesEnabled && !saved?.ready) { fail(job, 'generation_not_saved'); return; }
+      const saved = (patientNotesEnabled || recovered) ? (await patientRequest('getSavedNote', { timestamp: String(job.timestamp) })).note : null;
+      if ((patientNotesEnabled || recovered) && (!saved?.ready || !saved.version || typeof saved.note !== 'string' || String(saved.timestamp) !== String(job.timestamp))) { fail(job, 'generation_not_saved'); return; }
       if (!active(job)) return;
       cleanupNoteGeneration();
       setTextStream(saved?.note || text);

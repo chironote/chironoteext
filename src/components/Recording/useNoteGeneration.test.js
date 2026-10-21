@@ -3,9 +3,11 @@ import { TextDecoder } from 'util';
 import { mountHook, deferred, flush } from '../../test/hookHarness';
 import useNoteGeneration from './useNoteGeneration';
 import { getAmplifyClient } from '../../services/amplifyClient';
+import { patientRequest } from '../../services/patientNotes';
 import { generateToken } from './recordingAuth';
 
 jest.mock('../../services/amplifyClient', () => ({ getAmplifyClient: jest.fn() }));
+jest.mock('../../services/patientNotes', () => ({ patientNotesEnabled: false, patientRequest: jest.fn() }));
 jest.mock('./recordingAuth', () => ({ generateToken: jest.fn() }));
 
 describe('note generation lifecycle', () => {
@@ -122,4 +124,28 @@ describe('note generation lifecycle', () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(callbacks.onError).not.toHaveBeenCalled();
   });
+  test('recovered control fetches the exact saved identity even when the feature defaults off', async () => {
+    const saved={timestamp:'123',version:'winner',ready:true,note:'Synthetic winner'};
+    patientRequest.mockResolvedValue({note:saved});
+    ['Synthetic preview','\u0000ERR','OR:{"code":"NOTE_','RECOVERED","message":"Saved"}'].forEach(part=>reader.read.mockResolvedValueOnce(chunk(part)));
+    reader.read.mockResolvedValue({done:true}); await start();
+    expect(patientRequest).toHaveBeenCalledWith('getSavedNote',{timestamp:'123'});
+    expect(callbacks.onTextStreamUpdate).toHaveBeenLastCalledWith(saved.note,{timestamp:123,complete:true,savedNote:saved});
+    expect(callbacks.onError).not.toHaveBeenCalled();
+    expect(callbacks.onTextStreamUpdate.mock.calls.every(([text])=>!text.includes('\u0000')&&!text.includes('RECOVERED'))).toBe(true);
+  });
+  test('late recovered lookup after cleanup cannot publish a saved identity', async () => {
+    const pending=deferred(); patientRequest.mockReturnValue(pending.promise);
+    reader.read.mockResolvedValueOnce(chunk('Synthetic preview')).mockResolvedValueOnce(chunk('\u0000ERROR:{"code":"NOTE_RECOVERED","message":"Saved"}'));
+    await start(); act(()=>hook.current.cleanupNoteGeneration());callbacks.onTextStreamUpdate.mockClear();
+    await act(async()=>{pending.resolve({note:{timestamp:'123',version:'winner',ready:true,note:'Synthetic winner'}});await flush();});
+    expect(callbacks.onTextStreamUpdate).not.toHaveBeenCalled();
+  });
+  test('failed recovered lookup retains preview without claiming it was saved', async () => {
+    patientRequest.mockRejectedValue(new Error('Synthetic read unavailable'));
+    reader.read.mockResolvedValueOnce(chunk('Synthetic preview')).mockResolvedValueOnce(chunk('\u0000ERROR:{"code":"NOTE_RECOVERED","message":"Saved"}'));
+    await start();expect(callbacks.onError).toHaveBeenCalledTimes(1);
+    expect(callbacks.onTextStreamUpdate).toHaveBeenLastCalledWith('Synthetic preview',{timestamp:123,complete:true,unsaved:true});
+  });
+
 });

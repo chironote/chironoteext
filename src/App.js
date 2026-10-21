@@ -207,7 +207,7 @@ export function VisitWorkspace({ signOut, user }) {
           <Recording {...recordingManager} onBack={() => setShowRecording(true)} />
         ) : editingNote ? <SavedNoteEditor timestamp={editingNote} desktopSave onClose={() => setEditingNote(null)} onSaved={note => { setSelectedNote(note); notesHistory.refresh(); }} /> : (
           <>{patientNotesEnabled && reviewNote?.timestamp && !reviewNote.unsaved && <div className="patient-actions"><button type="button" onClick={() => setEditingNote(reviewNote.timestamp)}>Edit and save note</button></div>}
-          <>{reviewNote?.unsaved && <p role="alert">This preview was not saved. You can copy it; retry generation from the saved recording.</p>}</>
+          <>{reviewNote?.unsaved && <p role="alert">Saving could not be confirmed. Keep this preview and check saved notes before retrying.</p>}</>
           <NoteWorkspace note={reviewNote} copyState={copyState}
             onCopySection={copyText} onCopyNote={() => copyText(reviewNote.note, 'all')}
             canCopy={canCopy} onNewRecording={openRecording} /></>
