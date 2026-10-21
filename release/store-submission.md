@@ -2,6 +2,8 @@
 
 ## 1.3.2 recovery update — October 21, 2026
 
+**Submitted:** official API upload returned SUCCEEDED for 1.3.2, followed by PENDING_REVIEW on submission and status read-back at 20:18:43 UTC. The request selected DEFAULT_PUBLISH, normal review and blocking validation warnings. Publication will occur after approval; current public version remains 1.3.1 at 100%. Source is `4510449c5b774dcaeb98faf6c6b29a6486e7426e`, ZIP SHA-256 `df896297a9f858df351b5abd8f0f29b2a2e6a3873d2942414e97b3cd772e3cfe`. The following preparation text is historical; no further upload or duplicate submission is needed.
+
 Use the exact 1.3.2 archive produced from the integrated release branch, not any older same-version candidate. Live preflight confirmed published and draft 1.3.1 and no pending submission. The owner authorized production and configured the dedicated keyless API publisher under Publisher > Settings. The current workflow is in `knowledge/development/workflow.md`; store status, artifact provenance and remaining acceptance are in `knowledge/development/release-readiness.md`.
 
 This update buffers split terminal controls and retrieves the authoritative saved note after NOTE_RECOVERED. Conflicts, interruptions and failed verification retain an unconfirmed-save preview. No new permissions or feature enablement. Upload success, submitted review and publication are separate states; submit with normal review and publication after approval, preserving the existing audience.

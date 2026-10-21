@@ -8,6 +8,14 @@ tags: [release, chrome-web-store, validation, rollback]
 
 # Extension Release Readiness
 
+## Version 1.3.2 submitted — 2026-10-21
+
+The official API accepted the exact 1.3.2 ZIP with `uploadState: SUCCEEDED`, then accepted the owner-authorized production review submission. Status read-back at **20:18:43 UTC / 13:18:43 America/Los_Angeles** confirmed **1.3.2 PENDING_REVIEW at 100%** and **1.3.1 PUBLISHED at 100%**. Version 1.3.2 is not yet approved or publicly available. The successful request used `publishType: DEFAULT_PUBLISH`, `skipReview: false` and `blockOnWarnings: true`: it will publish automatically after approval, without skipping review or ignoring validation warnings. No audience, visibility, listing, credentials, rollback or other platform setting was changed.
+
+Binary source is PR [7](https://github.com/chironote/chironoteext/pull/7) merge `4510449c5b774dcaeb98faf6c6b29a6486e7426e`, identical to tested head `d8a1cc8ecdbf0c40dd9e56b16cec3b29cc580bb7`. Its runtime recovery changes were integrated by PR 5. ZIP path/hash and 115-test/build/MV3 evidence are recorded below; documentation-only updates do not change that artifact. The prior owner-reported 1.3.1 package remains preserved as fallback source evidence; API status independently confirms its published version, not byte identity with a downloaded signed CRX. Any rollback needs a higher-version forward release.
+
+Content-free API receipts, submission request, source/configuration fingerprints, archive and logs are retained in ignored `release-artifacts/production-2026-10-21-recovery/`. Tokens were kept only in process memory. The owner-enabled keyless setup under Publisher > Settings resolves the earlier access blocker; no more setup clicks are required. Future checks should use the verified V2 API and distinguish pending review, staged approval and published state. Approval/public availability and real-Chrome device/workflow acceptance remain unverified; no future monitoring is implied by this record.
+
 ## Version 1.3.2 preflight — 2026-10-21
 
 The owner explicitly authorized configuring the publishing API after the browser-control blocker. Google Cloud project `chironote-tools` now has the API enabled and a dedicated keyless publishing identity, linked by the owner at **Publisher > Settings**. Short-lived authentication and the existing publisher/item resource were verified without storing tokens or creating downloadable keys. See the [development workflow](./workflow.md) for the setup and official API references. The browser scripting restriction remains in force; API access supersedes the release-access blocker below.
