@@ -2,10 +2,19 @@
 
 ## 2026-10-21
 
+- **Production release preparation**: Integrated reviewed PR 5 into main; refreshed [release readiness](./development/release-readiness.md) with compatibility evidence, exact source/checks, owner-reported prior submission, preserved October 16 release history and the live version/pending-state gate. Store automation remains blocked; no new publication is claimed.
+
 - **Recovered-result candidate**: documented split stream controls, authoritative recovered body/version retrieval, session ownership, uncertainty and platform acceptance limits in [the recovery contract](components/recording-workflow.md). Synthetic validation only; no merge or production publication.
 
+## 2026-10-16
+
+- **Production package handoff**: Owner's Package screenshot shows draft/published 1.3.0. Preserved the latest validated source package as an explicitly named production 1.3.1 ZIP, rechecked source/hash/archive metadata, and recorded the exact upload path in [release readiness](./development/release-readiness.md). Upload/review/public availability remain unverified.
+
+- **Production destination authorized**: Owner changed extension distribution from testers to public production. Updated [release readiness](./development/release-readiness.md) with fresh remote main verification and the remaining store-access/version-history blocker. No upload, submission, publication or feature enablement occurred.
 
 ## 2026-10-15
+
+- **Tester release preparation**: Recorded fresh main `eaf0bc3`, 94 passing tests, successful build/MV3/ZIP gates, clean runtime audit and preserved fallback archives in [release readiness](./development/release-readiness.md). Candidate remains validation-only 1.3.1 with patient features disabled. Store/browser access prevents live version, isolated tester audience and real-Chrome verification; no upload or publication occurred.
 
 - **Copy text preservation**: Updated [clipboard behavior](./components/note-history.md) for copy-only cleanup that preserves lists, numbering, quotes, rules and literal punctuation while removing paired Markdown formatting. Generation/display and SOAP extraction are unchanged; added separate helper and regression coverage. Source-only integration; no publication.
 
