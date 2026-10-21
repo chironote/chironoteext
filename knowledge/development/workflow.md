@@ -18,6 +18,14 @@ The owner loads `build/` from chrome://extensions, pins the icon, and opens a pa
 
 For visual-only evidence, set `CHIRONOTE_VISUAL_FIXTURES=1` when running tests. App tests export synthetic markup from real components to ignored `release-artifacts/visual/`. Serve that folder on localhost for responsive screenshots. Those fixtures contain no live authentication or recording and must not ship inside the extension ZIP.
 
+## Publishing API
+
+The owner configured the Chrome Web Store API in Google Cloud project `chironote-tools` on October 21, 2026. Dedicated service account `chrome-webstore-publisher@chironote-tools.iam.gserviceaccount.com` is linked under **Publisher > Settings** in the Web Store dashboard. It has no general project role or user-managed key. The existing owner Google account has `roles/iam.serviceAccountTokenCreator` on that service account only. Use existing `gcloud` login and service-account impersonation with scope `https://www.googleapis.com/auth/chromewebstore` for short-lived tokens; keep tokens in process memory and out of command arguments, logs, files and Git. Refresh interactive Google authentication through the normal owner sign-in if it expires.
+
+Verified API resource: `publishers/de1b0bd2-7d7d-4993-9a2c-aa073e7da0f7/items/ikinlmngbmdglllenhhllneifmcbaedj`. V2 `fetchStatus` reads published/submitted versions and deployment percentages; it does not expose an unsubmitted draft version. A legacy read-only DRAFT request still returned 1.3.1 during this setup, but V1's documented support ended October 15, 2026; do not depend on it for future releases. If draft state cannot be established through supported tools, use an owner dashboard observation rather than inventing it.
+
+For an authorized release, verify source, version and archive hash, upload the exact ZIP to the existing item using V2 `media.upload`, check returned `crxVersion` and upload state, then re-read status. Submit only after successful processing and unchanged review preflight. V2 `publish` with `DEFAULT_PUBLISH` publishes after review approval; use `skipReview: false` and `blockOnWarnings: true`, and preserve the current rollout/visibility. A returned pending-review state is not publication. Do not cancel submissions, change audience or increase rollout as implicit setup actions. Browser gallery scripting remains blocked; this separately owner-authorized official API setup does not remove that browser restriction.
+
 Use JavaScript/JSX, two spaces, single quotes, and semicolons. Preserve narrow scope, minimal permissions, sanitized diagnostics, and no clinical-content persistence. Update affected concepts and the knowledge log with implementation changes. Validate with the repository's Healtech OKS validator.
 
 ## Provenance
@@ -27,3 +35,6 @@ Use JavaScript/JSX, two spaces, single quotes, and semicolons. Preserve narrow s
 - `../../src/App.test.jsx`
 - `../../AGENTS.md`
 - `../../release/reviewer-instructions.md`
+- [Chrome Web Store service accounts](https://developer.chrome.com/docs/webstore/service-accounts)
+- [Chrome Web Store V2 status](https://developer.chrome.com/docs/webstore/api/reference/rest/v2/publishers.items/fetchStatus)
+- [Chrome Web Store V2 submission](https://developer.chrome.com/docs/webstore/api/reference/rest/v2/publishers.items/publish)
