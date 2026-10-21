@@ -24,7 +24,41 @@ New patient capture keeps Exam layout visible, checked and disabled with a gray 
 
 Manual format preferences alone are persisted. Effective settings travel synchronously from Recording through RecordingManager into the recorder's immutable session snapshot before microphone permission, separately from visit metadata. Forced new-patient Exam never becomes a saved manual preference when switching or clearing patients. The final confirmation click reaches microphone acquisition without awaiting another lookup; exact-name duplicate lookup failures prevent new-patient creation and preserve the draft.
 
+## Recovered generation and saved-note authority
+
+The existing NUL ERROR control can carry `NOTE_RECOVERED` after the backend has
+confirmed a saved result that differs from the streamed preview. The stream parser
+holds control bytes across arbitrary read boundaries until its JSON completes;
+truncated, malformed or oversized controls fail closed. Control text is never
+added to the visible clinical preview. Whole-response JSON errors and transcript
+error parsing retain their existing one-shot behavior.
+
+Only NOTE_RECOVERED follows the saved-success path: fetch `getSavedNote` for the
+captured timestamp, verify ready status, matching timestamp and a version, then
+apply that authoritative body and identity. Ordinary EOF uses the same lookup when
+patient notes are enabled. Genuine conflicts, interrupted streams and unavailable
+or incomplete lookups preserve the preview and report unconfirmed persistence.
+Reader cancellation is best effort and cannot block a confirmed saved result.
+Saved-note retry accepts an unchanged version only for the explicit recovered
+control; ordinary retry still requires its new saved revision.
+
+The extension keeps one active generation job. The recovered control requests
+the saved record even when the patient-notes feature defaults off: that explicit
+backend success still needs authoritative retrieval. Completion carries savedNote
+metadata for review/editor routing. A replaced or cancelled job cannot publish a
+late retrieval. Ordinary feature-off completion retains its existing text path.
+
+Synthetic parser, service, generation-hook/session and application tests cover the
+recovery boundary. Browser tests do not establish installed-device acceptance.
+Authenticated refresh, physical recording, interrupted connectivity and subsequent
+conditional Save still require the platform's normal release checks. This source
+patch does not publish a website, native app or extension release.
+
 ## Provenance
+
+- [Incremental generation control parser](../../src/components/Recording/noteGenerationErrors.js)
+- [Saved generation retry and retrieval](../../src/services/patientNotes.js)
+
 
 - `../../src/components/Recording/Recording.jsx` and its regression tests
 - `../../src/components/Recording/RecordingManager.jsx`
