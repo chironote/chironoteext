@@ -8,6 +8,16 @@ tags: [release, chrome-web-store, validation, rollback]
 
 # Extension Release Readiness
 
+## Version 1.3.2 preflight — 2026-10-21
+
+The owner explicitly authorized configuring the publishing API after the browser-control blocker. Google Cloud project `chironote-tools` now has the API enabled and a dedicated keyless publishing identity, linked by the owner at **Publisher > Settings**. Short-lived authentication and the existing publisher/item resource were verified without storing tokens or creating downloadable keys. See the [development workflow](./workflow.md) for the setup and official API references. The browser scripting restriction remains in force; API access supersedes the release-access blocker below.
+
+Live V2 status at 20:13:04 UTC on October 21 confirmed **PUBLISHED 1.3.1 at 100%**, with no submitted revision. A separate read-only draft observation at 20:13:36 UTC returned **1.3.1**. This supersedes the earlier owner-reported-only submission and unknown publication state. Source metadata is advanced to **1.3.2** for PR 5's recovered-result changes; no runtime feature flag, permission or backend contract changes accompany the version update. Recheck store state before upload. The older 1.3.1 artifacts remain preserved; never upload the validation-only archive from this run.
+
+Version 1.3.2 passed 16 suites / 115 tests, production build/MV3 verification, 8-concept OKS validation and diff checks using Node 24.19.0. Dependencies/configuration match the earlier checked lockfile and legitimate primary inputs; the unchanged runtime dependency tree's zero-vulnerability audit is reused. The exact upload archive is `release-artifacts/production-2026-10-21-recovery/chironote-extension-1.3.2.zip`, SHA-256 `df896297a9f858df351b5abd8f0f29b2a2e6a3873d2942414e97b3cd772e3cfe`; its 12-entry archive has a root 1.3.2 manifest, bundled build and no source maps, repository, environment files or dependencies.
+
+The next steps are integration, a fresh live preflight, upload/processing verification and production review submission using `DEFAULT_PUBLISH` (publication after approval). No 1.3.2 upload, submission or publication is claimed by this preflight entry. Real-Chrome authenticated microphone, recovered-note retrieval, side-panel continuity, history/copy and conditional Save acceptance remain outstanding.
+
 ## Recovered-note production preparation — 2026-10-21
 
 The owner authorized the existing public Chrome extension update on October 21. PR [5](https://github.com/chironote/chironoteext/pull/5), reviewed head `68af8e79d2df034be0ccf094a2088b3b52e2fa46`, was merged into main as `f2310c84636cbbf8f746824744292812a7d6d70b`. The merge tree equals the reviewed head. Independent read-only source review found no remaining blocking finding. Exact-head local validation passed 16 suites / 115 tests, production build/MV3 verification and 8-concept OKS validation. There are no configured GitHub checks; the empty check list is not a CI pass.

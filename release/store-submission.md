@@ -1,5 +1,11 @@
 # Chrome Web Store submission — ChiroNote
 
+## 1.3.2 recovery update — October 21, 2026
+
+Use the exact 1.3.2 archive produced from the integrated release branch, not any older same-version candidate. Live preflight confirmed published and draft 1.3.1 and no pending submission. The owner authorized production and configured the dedicated keyless API publisher under Publisher > Settings. The current workflow is in `knowledge/development/workflow.md`; store status, artifact provenance and remaining acceptance are in `knowledge/development/release-readiness.md`.
+
+This update buffers split terminal controls and retrieves the authoritative saved note after NOTE_RECOVERED. Conflicts, interruptions and failed verification retain an unconfirmed-save preview. No new permissions or feature enablement. Upload success, submitted review and publication are separate states; submit with normal review and publication after approval, preserving the existing audience.
+
 ## 1.3.1 update — September 11, 2026
 
 The owner reports the listing is live and authorized merging and submitting this update. Upload `release-artifacts/chironote-extension-1.3.1-candidate.zip` to the existing item `ikinlmngbmdglllenhhllneifmcbaedj` after confirming the current published version is lower. This update adds complete-note plain-text dragging from Recent Notes and improves the compact history toolbar. No new permissions are requested. Verify dragging into a dummy EHR, retain the existing reviewer access, and submit for review. Browser automation rejected dashboard access in this session; no submission was performed.

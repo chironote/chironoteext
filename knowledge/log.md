@@ -2,6 +2,8 @@
 
 ## 2026-10-21
 
+- **Publishing API and 1.3.2 preflight**: Owner enabled/linked the dedicated keyless identity under Publisher > Settings. Added the [API workflow](./development/workflow.md), verified published/draft 1.3.1 with no pending submission, and updated [release readiness](./development/release-readiness.md) and version metadata for the recovery update. The 1.3.2 preparation passed 115 tests/build/MV3/OKS and exact archive verification; its path/hash are recorded in release readiness. Browser restriction remains; no 1.3.2 publication is claimed at preflight.
+
 - **Production release preparation**: Integrated reviewed PR 5 into main; refreshed [release readiness](./development/release-readiness.md) with compatibility evidence, exact source/checks, owner-reported prior submission, preserved October 16 release history and the live version/pending-state gate. Store automation remains blocked; no new publication is claimed.
 
 - **Recovered-result candidate**: documented split stream controls, authoritative recovered body/version retrieval, session ownership, uncertainty and platform acceptance limits in [the recovery contract](components/recording-workflow.md). Synthetic validation only; no merge or production publication.
